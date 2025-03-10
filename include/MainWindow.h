@@ -6,6 +6,13 @@
 #include <ctime>
 #include <windows.h>
 #include <string>
+#include <wx/event.h>
+#include <thread>
+#include <future>
+#include "App.h"
+#include "Id.h"
+#include <cstdio>
+#include <memory>
 class MainWindow : public wxFrame
 {
 public:
@@ -14,6 +21,11 @@ public:
     wxBoxSizer* resultsSizer;
     wxButton* runBT;
     wxListCtrl* resultList;
+
+    int PassedFromMaster = 0;
+    int PassedFromSlave = 0;
+    int FailedFromMaster = 0;
+    int FailedFromSlave = 0;
 private:
 
     HANDLE hOutputReadPipe;
@@ -21,10 +33,12 @@ private:
     void OnExit(wxCommandEvent& event);
     void OnAbout(wxCommandEvent& event);
     void onRunCommand(wxCommandEvent& event);
-    int runCommand(const wxString& command);
-    void AddMessage(const wxString& timestamp, const wxString& message); 
-    wxString get_current_timestamp();  
-    void RunCommand(const wxString& command);
-    void ProcessOutput();
+    void AddMessage(const wxString& timestamp, const wxString& message);
+    wxString get_current_timestamp();
+    std::string RunCommand(const std::string& command);
+    void StartThread(const wxString& input);
+    void OnThreadResult(wxCommandEvent& event);
+
 };
 
+wxDEFINE_EVENT(wxEVT_THREAD_RESULT, wxCommandEvent);
