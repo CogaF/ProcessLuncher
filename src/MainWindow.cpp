@@ -5,13 +5,13 @@
 
 
 MainWindow::MainWindow()
-    : wxFrame(nullptr, wxID_ANY, "Hello World")
+    : wxFrame(nullptr, wxID_ANY, "Parallel Command Runner - PCR")
 {
     wxSize frameSize(950, 550);
     wxFrame::SetSize(frameSize);
     wxMenu* menuFile = new wxMenu;
-    menuFile->Append(windowIDs::ID_Hello, "&Hello...\tCtrl-H",
-        "Help string shown in status bar for this menu item");
+    menuFile->Append(windowIDs::ID_Hello, "&Build greeting...\tCtrl-H",
+        "Greeting from application");
     menuFile->AppendSeparator();
     menuFile->Append(wxID_EXIT);
 
@@ -20,7 +20,7 @@ MainWindow::MainWindow()
 
     wxMenuBar* menuBar = new wxMenuBar;
     menuBar->Append(menuFile, "&File");
-    menuBar->Append(menuHelp, "&Help");
+    menuBar->Append(menuHelp, "&Info");
 
     SetMenuBar(menuBar);
 
@@ -32,7 +32,7 @@ MainWindow::MainWindow()
     Bind(wxEVT_BUTTON, &MainWindow::onRunCommand, this, windowIDs::ID_RUN_COMMAND_BT);
     Bind(wxEVT_THREAD_RESULT, &MainWindow::OnThreadResult, this);
 
-    SetStatusText("Welcome to wxWidgets!");
+    SetStatusText("Command Runner!");
     resultsSizer = new wxBoxSizer(wxVERTICAL);
     resultList = new wxListCtrl(this, windowIDs::ID_COMMAND_LIST, wxDefaultPosition, wxSize(950,350), wxLC_REPORT | wxLC_SINGLE_SEL);
 
@@ -67,9 +67,9 @@ void MainWindow::OnExit(wxCommandEvent& event)
 }
 void MainWindow::OnAbout(wxCommandEvent& event)
 {
-    wxString ToPrint = "This is an APP that alows to run multiple CMD like command in separated thread (aka simultaneously)\n";
+    wxString ToPrint = "This APP can multiple \"*.bat\" commands in separated threads (aka simultaneously)\n";
     ToPrint += "Results of each execution will be shown as separated messages in the list\n\nDev. Coga F. (EGO Group S.r.L @ fation.coga@egogroup.eu)";
-    wxMessageBox(ToPrint, "About Command Runner", wxOK | wxICON_INFORMATION);
+    wxMessageBox(ToPrint, "About PCR", wxOK | wxICON_INFORMATION);
 }
 
 void MainWindow::OnHello(wxCommandEvent& event)
