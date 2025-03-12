@@ -138,7 +138,7 @@ std::string MainWindow::RunCommand(const std::string& command) {
     PROCESS_INFORMATION pi = { 0 };
 
     si.dwFlags = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
-    //si.wShowWindow = SW_HIDE;  // Hides the window
+    si.wShowWindow = SW_HIDE;  // Hides the window
     si.hStdOutput = hWrite;
     si.hStdError = hWrite;  // Redirect stderr to stdout
 
