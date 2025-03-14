@@ -103,7 +103,7 @@ void MainWindow::OnExit(wxCommandEvent& event)
 }
 void MainWindow::OnAbout(wxCommandEvent& event)
 {
-    wxString ToPrint = "This APP can multiple \"*.bat\" commands in separated threads (aka simultaneously)\n";
+    wxString ToPrint = "This APP can run multiple \"*.bat\" commands in separated threads (aka simultaneously)\n";
     ToPrint += "Results of each execution will be shown as separated messages in the list\n\nDev. Coga F. (EGO Group S.r.L @ fation.coga@egogroup.eu)";
     wxMessageBox(ToPrint, "About PCR", wxOK | wxICON_INFORMATION);
 }
