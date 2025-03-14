@@ -36,6 +36,10 @@
     <ClInclude Include="include\cmdgui.h" />
     <ClInclude Include="include\Id.h" />
     <ClInclude Include="include\MainWindow.h" />
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="ProcessLuncher.rc" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

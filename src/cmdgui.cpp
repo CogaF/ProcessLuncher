@@ -10,9 +10,12 @@ cmdgui::cmdgui(wxPanel* parentPanel) {
 	Cmd_sz = new wxBoxSizer(wxHORIZONTAL);
 	Cmd_active_CB = new wxCheckBox();
 	Cmd_active_CB = new wxCheckBox(parentPanel, wxID_ANY, "");
-	Cmd_Sequential_CB = new wxCheckBox(parentPanel, wxID_ANY, "");
+	Cmd_sequential_CB = new wxCheckBox(parentPanel, wxID_ANY, "");
 	Cmd_txt = new wxTextCtrl(parentPanel, wxID_ANY, "");
-	Cmd_Res = new wxTextCtrl(parentPanel, wxID_ANY, "");
+	Cmd_res = new wxTextCtrl(parentPanel, wxID_ANY, "");
+	Cmd_running_CB = new wxCheckBox(parentPanel, wxID_ANY, "");
+	Cmd_running_CB->Disable();
+	Cmd_running_CB->SetValue(false);
 	Cmd_counters = new wxStaticText(parentPanel, wxID_ANY, "");
 	buildDefault();
 }
@@ -22,9 +25,13 @@ cmdgui::cmdgui(wxPanel* parentPanel, int currId) {
 
 		Cmd_sz = new wxBoxSizer(wxHORIZONTAL);
 		Cmd_active_CB = new wxCheckBox(parentPanel, wxID_ANY,"");
-		Cmd_Sequential_CB = new wxCheckBox(parentPanel, wxID_ANY, "");
+		Cmd_running_CB = new wxCheckBox(parentPanel, wxID_ANY, "");
+		Cmd_sequential_CB = new wxCheckBox(parentPanel, wxID_ANY, "");
 		Cmd_txt = new wxTextCtrl(parentPanel, wxID_ANY, "");
-		Cmd_Res = new wxTextCtrl(parentPanel, wxID_ANY, "");
+		Cmd_res = new wxTextCtrl(parentPanel, wxID_ANY, "");
+		Cmd_running_CB = new wxCheckBox(parentPanel, wxID_ANY, "");
+		Cmd_running_CB->Disable();
+		Cmd_running_CB->SetValue(false);
 		Cmd_counters = new wxStaticText(parentPanel,wxID_ANY,"");
 	}
 	_thisId = currId;
@@ -36,9 +43,12 @@ cmdgui::cmdgui(wxPanel* parentPanel, int currId, bool isActive, bool sequential,
 
 		Cmd_sz = new wxBoxSizer(wxHORIZONTAL);
 		Cmd_active_CB = new wxCheckBox(parentPanel, wxID_ANY, "");
-		Cmd_Sequential_CB = new wxCheckBox(parentPanel, wxID_ANY, "");
+		Cmd_sequential_CB = new wxCheckBox(parentPanel, wxID_ANY, "");
 		Cmd_txt = new wxTextCtrl(parentPanel, wxID_ANY, "");
-		Cmd_Res = new wxTextCtrl(parentPanel, wxID_ANY, "");
+		Cmd_res = new wxTextCtrl(parentPanel, wxID_ANY, "");
+		Cmd_running_CB = new wxCheckBox(parentPanel, wxID_ANY, "");
+		Cmd_running_CB->Disable();
+		Cmd_running_CB->SetValue(false);
 		Cmd_counters = new wxStaticText(parentPanel, wxID_ANY, "");
 	}
 	_thisId = currId;
@@ -47,6 +57,7 @@ cmdgui::cmdgui(wxPanel* parentPanel, int currId, bool isActive, bool sequential,
 	_cmdName = cmdName;
 	_positiveVal = positiveValue;
 	_counters = counters_s;
+	_isRunning = false;
 	update();
 
 }
@@ -61,7 +72,7 @@ bool cmdgui::isActive() {
 }
 
 bool cmdgui::isSequential() {
-	_isSequential = Cmd_Sequential_CB->GetValue();
+	_isSequential = Cmd_sequential_CB->GetValue();
 	return _isSequential;
 }
 
@@ -71,7 +82,7 @@ wxString cmdgui::getCmd() {
 }
 
 wxString cmdgui::getPostiveVal() {
-	_positiveVal = Cmd_Res->GetValue();
+	_positiveVal = Cmd_res->GetValue();
 	return _positiveVal;
 }
 
@@ -88,10 +99,12 @@ bool cmdgui::buildDefault() {
 
 	Cmd_active_CB->SetValue(true);
 	Cmd_active_CB->SetLabel("Active?");
-	Cmd_Sequential_CB->SetValue(false);
-	Cmd_Sequential_CB->SetLabel("Sequential?");
+	Cmd_sequential_CB->SetValue(false);
+	Cmd_sequential_CB->SetLabel("Sequential?");
 	Cmd_txt->SetValue(_cmdName);
-	Cmd_Res->SetValue(_positiveVal);
+	Cmd_res->SetValue(_positiveVal);
+	Cmd_running_CB->SetLabel("Ready");
+	Cmd_running_CB->SetValue(false);
 	Cmd_counters->SetLabel(_counters);
 	if (!setCurrIds(_thisId)) {
 		_guiExists = false;
@@ -99,9 +112,10 @@ bool cmdgui::buildDefault() {
 	}
 	if (!_guiExists) {
 		Cmd_sz->Add(Cmd_active_CB, 1, wxEXPAND | wxALL, 1);
-		Cmd_sz->Add(Cmd_Sequential_CB, 1, wxEXPAND | wxALL, 1);
+		Cmd_sz->Add(Cmd_sequential_CB, 1, wxEXPAND | wxALL, 1);
 		Cmd_sz->Add(Cmd_txt, 7, wxEXPAND | wxALL, 1);
-		Cmd_sz->Add(Cmd_Res, 4, wxEXPAND | wxALL, 1);
+		Cmd_sz->Add(Cmd_res, 4, wxEXPAND | wxALL, 1);
+		Cmd_sz->Add(Cmd_running_CB, 1, wxEXPAND | wxALL, 1);
 		Cmd_sz->Add(Cmd_counters, 2, wxEXPAND | wxALL, 1);
 	}
 	_guiExists = true;
@@ -113,10 +127,19 @@ bool cmdgui::update() {
 
 	Cmd_active_CB->SetValue(_isActive);
 	Cmd_active_CB->SetLabel("Active?");
-	Cmd_Sequential_CB->SetValue(_isSequential);
-	Cmd_Sequential_CB->SetLabel("Sequential?");
+	Cmd_sequential_CB->SetValue(_isSequential);
+	Cmd_sequential_CB->SetLabel("Sequential?");
 	Cmd_txt->SetValue(_cmdName);
-	Cmd_Res->SetValue(_positiveVal);
+	Cmd_res->SetValue(_positiveVal);
+
+	Cmd_running_CB->SetValue(_isRunning);
+	if (_isRunning) {
+		Cmd_running_CB->SetLabel("Busy");
+	}
+	else {
+		Cmd_running_CB->SetLabel("Ready");
+	}
+
 	Cmd_counters->SetLabel(_counters);
 	if (!setCurrIds(_thisId)) {
 		_guiExists = false;
@@ -124,9 +147,10 @@ bool cmdgui::update() {
 	}
 	if (!_guiExists) {
 		Cmd_sz->Add(Cmd_active_CB, 1, wxEXPAND | wxALL, 1);
-		Cmd_sz->Add(Cmd_Sequential_CB, 1, wxEXPAND | wxALL, 1);
+		Cmd_sz->Add(Cmd_sequential_CB, 1, wxEXPAND | wxALL, 1);
 		Cmd_sz->Add(Cmd_txt, 7, wxEXPAND | wxALL, 1);
-		Cmd_sz->Add(Cmd_Res, 4, wxEXPAND | wxALL, 1);
+		Cmd_sz->Add(Cmd_res, 4, wxEXPAND | wxALL, 1);
+		Cmd_sz->Add(Cmd_running_CB, 1, wxEXPAND | wxALL, 1);
 		Cmd_sz->Add(Cmd_counters, 2, wxEXPAND | wxALL, 1);
 	}
 	_guiExists = true;
@@ -135,11 +159,30 @@ bool cmdgui::update() {
 
 bool cmdgui::setSequential(bool sequentialStatus) {
 	_isSequential = sequentialStatus;
-	if (Cmd_Sequential_CB != nullptr) {
-		Cmd_Sequential_CB->SetValue(_isSequential);
+	if (Cmd_sequential_CB != nullptr) {
+		Cmd_sequential_CB->SetValue(_isSequential);
 		return true;
 	}
 	return false;
+}
+
+bool cmdgui::setRunning(bool runninglStatus) {
+	_isRunning = runninglStatus;
+	if (Cmd_running_CB != nullptr) {
+		Cmd_running_CB->SetValue(_isRunning);
+		if (_isRunning) {
+			Cmd_running_CB->SetLabel("Busy");
+		}
+		else {
+			Cmd_running_CB->SetLabel("Ready");
+		}
+		return true;
+	}
+	return false;
+}
+
+bool cmdgui::getRunning() {
+	return _isRunning;
 }
 
 bool cmdgui::setActive(bool activeStatus) {
@@ -162,8 +205,8 @@ bool cmdgui::setCmd(wxString cmdName) {
 
 bool cmdgui::setPostVal(wxString positiveValue) {
 	_positiveVal = positiveValue;
-	if (Cmd_Res != nullptr) {
-		Cmd_Res->SetValue(positiveValue);
+	if (Cmd_res != nullptr) {
+		Cmd_res->SetValue(positiveValue);
 		return true;
 	}
 	return false;
@@ -173,14 +216,14 @@ bool cmdgui::setPostVal(wxString positiveValue) {
 bool cmdgui::setCurrIds(int currId) {
 	_thisId = currId;
 	if (Cmd_active_CB != nullptr &&
-		Cmd_Sequential_CB != nullptr &&
+		Cmd_sequential_CB != nullptr &&
 		Cmd_txt != nullptr &&
-		Cmd_Res != nullptr &&
+		Cmd_res != nullptr &&
 		Cmd_counters != nullptr) {
 		Cmd_active_CB->SetId(_thisId );
-		Cmd_Sequential_CB->SetId(_thisId + 1);
+		Cmd_sequential_CB->SetId(_thisId + 1);
 		Cmd_txt->SetId(_thisId + 2);
-		Cmd_Res->SetId(_thisId + 3);
+		Cmd_res->SetId(_thisId + 3);
 		Cmd_counters->SetId(_thisId + 4);
 		return true;
 	}

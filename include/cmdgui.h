@@ -12,9 +12,10 @@ class cmdgui
 private:
 	wxBoxSizer*		Cmd_sz;
 	wxCheckBox*		Cmd_active_CB;
-	wxCheckBox*		Cmd_Sequential_CB;
+	wxCheckBox*		Cmd_sequential_CB;
+	wxCheckBox*		Cmd_running_CB;
 	wxTextCtrl*		Cmd_txt;
-	wxTextCtrl*		Cmd_Res;
+	wxTextCtrl*		Cmd_res;
 	wxStaticText*	Cmd_counters;
 
 	wxString _cmdName = "ping google.com";
@@ -24,6 +25,7 @@ private:
 	bool _isSequential = false;
 	int _thisId = windowIDs::ID_GUI_CLASS;
 	bool _guiExists = false;
+	bool _isRunning = false;
 
 public:
 	cmdgui(wxPanel* parentPanel);
@@ -43,6 +45,8 @@ public:
 	bool setCurrIds(int currId);
 	int getCurrId(); 
 	bool update();
+	bool setRunning(bool runninglStatus);
+	bool getRunning();
 	wxBoxSizer* getPointer();
 };
 

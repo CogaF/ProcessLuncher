@@ -32,5 +32,9 @@
     <ClInclude Include="include\Id.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="ProcessLuncher.rc" />
   </ItemGroup>
 </Project>
