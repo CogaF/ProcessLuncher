@@ -233,158 +233,179 @@ void MainWindow::AddMessage(const wxString& timestamp, const wxString& message) 
 
 void MainWindow::onRunCommand(wxCommandEvent& event)
 {
-    if (!Cmd1->getRunning()) {
-        if (Cmd1->isActive()) {
-            if (Cmd1->setRunning(true)) {
-                StartThread(Cmd1->getCmd(), 1);
-            }
-            else {
-                AddMessage(get_current_timestamp(), wxString::Format("Couldn't set the CMD 1 gui to BUSY"));
-            }
-        }
-    }
-    else {
-        AddMessage(get_current_timestamp(), wxString::Format("Thread for CMD 1 already active"));
-    }
+    bool runCommands = true;
+    if (Cmd1->getRunning() || Cmd2->getRunning() || Cmd3->getRunning() || Cmd4->getRunning() ||
+        Cmd5->getRunning() || Cmd6->getRunning() || Cmd7->getRunning() || Cmd8->getRunning() ||
+        Cmd9->getRunning() || Cmd10->getRunning() || Cmd11->getRunning()) {
 
-    if (!Cmd2->getRunning()) {
-        if (Cmd2->isActive()) {
-            if (Cmd2->setRunning(true)) {
-                StartThread(Cmd2->getCmd(), 2);
-            }
-            else {
-                AddMessage(get_current_timestamp(), wxString::Format("Couldn't set the CMD 2 gui to BUSY"));
-            }
+        if (wxMessageBox("Found at leas one thread still active:\nDo you want to launch all the not running commands?",
+            " PCR - Confirmation Request", wxYES_NO) == wxYES) {
+            runCommands = true;
         }
-    }
-    else {
-        AddMessage(get_current_timestamp(), wxString::Format("Thread for CMD 2 already active"));
-    }
+        else {
+            runCommands = false;
+        }
 
-    if (!Cmd3->getRunning()) {
-        if (Cmd3->isActive()) {
-            if (Cmd3->setRunning(true)) {
-                StartThread(Cmd3->getCmd(), 3);
-            }
-            else {
-                AddMessage(get_current_timestamp(), wxString::Format("Couldn't set the CMD 3 gui to BUSY"));
-            }
-        }
     }
-    else {
-        AddMessage(get_current_timestamp(), wxString::Format("Thread for CMD 3 already active"));
-    }
+    //if permission granted to run 
+    //then each command will be checked if not running, if yes then will add message that it was found running
+    //if not running then it will be checked if active, if yes it will be launched after setting it to running, if not the will be silently skipped
+    // setting to running return bool true for setted ok otherwise false, case gui has nullptr, in this case a message that informs about this will be added to list
+    if (runCommands) {
 
-    if (!Cmd4->getRunning()) {
-        if (Cmd4->isActive()) {
-            if (Cmd4->setRunning(true)) {
-                StartThread(Cmd4->getCmd(), 4);
-            }
-            else {
-                AddMessage(get_current_timestamp(), wxString::Format("Couldn't set the CMD 4 gui to BUSY"));
+        if (!Cmd1->getRunning()) {
+            if (Cmd1->isActive()) {
+                if (Cmd1->setRunning(true)) {
+                    StartThread(Cmd1->getCmd(), 1);
+                }
+                else {
+                    AddMessage(get_current_timestamp(), wxString::Format("Couldn't set the CMD 1 gui to BUSY"));
+                }
             }
         }
-    }
-    else {
-        AddMessage(get_current_timestamp(), wxString::Format("Thread for CMD 4 already active"));
-    }
+        else {
+            AddMessage(get_current_timestamp(), wxString::Format("Thread for CMD 1 already active"));
+        }
 
-    if (!Cmd5->getRunning()) {
-        if (Cmd5->isActive()) {
-            if (Cmd5->setRunning(true)) {
-                StartThread(Cmd5->getCmd(), 5);
-            }
-            else {
-                AddMessage(get_current_timestamp(), wxString::Format("Couldn't set the CMD 5 gui to BUSY"));
+        if (!Cmd2->getRunning()) {
+            if (Cmd2->isActive()) {
+                if (Cmd2->setRunning(true)) {
+                    StartThread(Cmd2->getCmd(), 2);
+                }
+                else {
+                    AddMessage(get_current_timestamp(), wxString::Format("Couldn't set the CMD 2 gui to BUSY"));
+                }
             }
         }
-    }
-    else {
-        AddMessage(get_current_timestamp(), wxString::Format("Thread for CMD 5 already active"));
-    }
+        else {
+            AddMessage(get_current_timestamp(), wxString::Format("Thread for CMD 2 already active"));
+        }
 
-    if (!Cmd6->getRunning()) {
-        if (Cmd6->isActive()) {
-            if (Cmd6->setRunning(true)) {
-                StartThread(Cmd6->getCmd(), 6);
-            }
-            else {
-                AddMessage(get_current_timestamp(), wxString::Format("Couldn't set the CMD 6 gui to BUSY"));
+        if (!Cmd3->getRunning()) {
+            if (Cmd3->isActive()) {
+                if (Cmd3->setRunning(true)) {
+                    StartThread(Cmd3->getCmd(), 3);
+                }
+                else {
+                    AddMessage(get_current_timestamp(), wxString::Format("Couldn't set the CMD 3 gui to BUSY"));
+                }
             }
         }
-    }
-    else {
-        AddMessage(get_current_timestamp(), wxString::Format("Thread for CMD 6 already active"));
-    }
+        else {
+            AddMessage(get_current_timestamp(), wxString::Format("Thread for CMD 3 already active"));
+        }
 
-    if (!Cmd7->getRunning()) {
-        if (Cmd7->isActive()) {
-            if (Cmd7->setRunning(true)) {
-                StartThread(Cmd7->getCmd(), 7);
-            }
-            else {
-                AddMessage(get_current_timestamp(), wxString::Format("Couldn't set the CMD 7 gui to BUSY"));
+        if (!Cmd4->getRunning()) {
+            if (Cmd4->isActive()) {
+                if (Cmd4->setRunning(true)) {
+                    StartThread(Cmd4->getCmd(), 4);
+                }
+                else {
+                    AddMessage(get_current_timestamp(), wxString::Format("Couldn't set the CMD 4 gui to BUSY"));
+                }
             }
         }
-    }
-    else {
-        AddMessage(get_current_timestamp(), wxString::Format("Thread for CMD 7 already active"));
-    }
+        else {
+            AddMessage(get_current_timestamp(), wxString::Format("Thread for CMD 4 already active"));
+        }
 
-    if (!Cmd8->getRunning()) {
-        if (Cmd8->isActive()) {
-            if (Cmd8->setRunning(true)) {
-                StartThread(Cmd8->getCmd(), 8);
-            }
-            else {
-                AddMessage(get_current_timestamp(), wxString::Format("Couldn't set the CMD 8 gui to BUSY"));
+        if (!Cmd5->getRunning()) {
+            if (Cmd5->isActive()) {
+                if (Cmd5->setRunning(true)) {
+                    StartThread(Cmd5->getCmd(), 5);
+                }
+                else {
+                    AddMessage(get_current_timestamp(), wxString::Format("Couldn't set the CMD 5 gui to BUSY"));
+                }
             }
         }
-    }
-    else {
-        AddMessage(get_current_timestamp(), wxString::Format("Thread for CMD 8 already active"));
-    }
+        else {
+            AddMessage(get_current_timestamp(), wxString::Format("Thread for CMD 5 already active"));
+        }
 
-    if (!Cmd9->getRunning()) {
-        if (Cmd9->isActive()) {
-            if (Cmd9->setRunning(true)) {
-                StartThread(Cmd9->getCmd(), 9);
-            }
-            else {
-                AddMessage(get_current_timestamp(), wxString::Format("Couldn't set the CMD 9 gui to BUSY"));
+        if (!Cmd6->getRunning()) {
+            if (Cmd6->isActive()) {
+                if (Cmd6->setRunning(true)) {
+                    StartThread(Cmd6->getCmd(), 6);
+                }
+                else {
+                    AddMessage(get_current_timestamp(), wxString::Format("Couldn't set the CMD 6 gui to BUSY"));
+                }
             }
         }
-    }
-    else {
-        AddMessage(get_current_timestamp(), wxString::Format("Thread for CMD 9 already active"));
-    }
+        else {
+            AddMessage(get_current_timestamp(), wxString::Format("Thread for CMD 6 already active"));
+        }
 
-    if (!Cmd10->getRunning()) {
-        if (Cmd10->isActive()) {
-            if (Cmd10->setRunning(true)) {
-                StartThread(Cmd10->getCmd(), 10);
-            }
-            else {
-                AddMessage(get_current_timestamp(), wxString::Format("Couldn't set the CMD 10 gui to BUSY"));
+        if (!Cmd7->getRunning()) {
+            if (Cmd7->isActive()) {
+                if (Cmd7->setRunning(true)) {
+                    StartThread(Cmd7->getCmd(), 7);
+                }
+                else {
+                    AddMessage(get_current_timestamp(), wxString::Format("Couldn't set the CMD 7 gui to BUSY"));
+                }
             }
         }
-    }
-    else {
-        AddMessage(get_current_timestamp(), wxString::Format("Thread for CMD 10 already active"));
-    }
+        else {
+            AddMessage(get_current_timestamp(), wxString::Format("Thread for CMD 7 already active"));
+        }
 
-    if (!Cmd11->getRunning()) {
-        if (Cmd11->isActive()) {
-            if (Cmd11->setRunning(true)) {
-                StartThread(Cmd11->getCmd(), 11);
-            }
-            else {
-                AddMessage(get_current_timestamp(), wxString::Format("Couldn't set the CMD 11 gui to BUSY"));
+        if (!Cmd8->getRunning()) {
+            if (Cmd8->isActive()) {
+                if (Cmd8->setRunning(true)) {
+                    StartThread(Cmd8->getCmd(), 8);
+                }
+                else {
+                    AddMessage(get_current_timestamp(), wxString::Format("Couldn't set the CMD 8 gui to BUSY"));
+                }
             }
         }
-    }
-    else {
-        AddMessage(get_current_timestamp(), wxString::Format("Thread for CMD 11 already active"));
+        else {
+            AddMessage(get_current_timestamp(), wxString::Format("Thread for CMD 8 already active"));
+        }
+
+        if (!Cmd9->getRunning()) {
+            if (Cmd9->isActive()) {
+                if (Cmd9->setRunning(true)) {
+                    StartThread(Cmd9->getCmd(), 9);
+                }
+                else {
+                    AddMessage(get_current_timestamp(), wxString::Format("Couldn't set the CMD 9 gui to BUSY"));
+                }
+            }
+        }
+        else {
+            AddMessage(get_current_timestamp(), wxString::Format("Thread for CMD 9 already active"));
+        }
+
+        if (!Cmd10->getRunning()) {
+            if (Cmd10->isActive()) {
+                if (Cmd10->setRunning(true)) {
+                    StartThread(Cmd10->getCmd(), 10);
+                }
+                else {
+                    AddMessage(get_current_timestamp(), wxString::Format("Couldn't set the CMD 10 gui to BUSY"));
+                }
+            }
+        }
+        else {
+            AddMessage(get_current_timestamp(), wxString::Format("Thread for CMD 10 already active"));
+        }
+
+        if (!Cmd11->getRunning()) {
+            if (Cmd11->isActive()) {
+                if (Cmd11->setRunning(true)) {
+                    StartThread(Cmd11->getCmd(), 11);
+                }
+                else {
+                    AddMessage(get_current_timestamp(), wxString::Format("Couldn't set the CMD 11 gui to BUSY"));
+                }
+            }
+        }
+        else {
+            AddMessage(get_current_timestamp(), wxString::Format("Thread for CMD 11 already active"));
+        }
     }
 
 }
