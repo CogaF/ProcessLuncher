@@ -26,9 +26,6 @@
     <ClInclude Include="include\MainWindow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="cmdgui.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\cmdgui.h">
       <Filter>Header Files</Filter>
     </ClInclude>

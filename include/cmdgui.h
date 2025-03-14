@@ -1,3 +1,9 @@
+/*
+	This is an application that was created by me Coga Fation but truth be told
+	that without the help of ChatGpt it could have taken many many hours
+	I'm taking for granted that I would have reached the same results which is a long shot
+*/
+
 #pragma once
 #include <wx/wx.h>
 #include <Id.h>
@@ -11,8 +17,8 @@ private:
 	wxTextCtrl*		Cmd_Res;
 	wxStaticText*	Cmd_counters;
 
-	wxString _cmdName = "Insert command or the filepath to run in CMD";
-	wxString _positiveVal = "Insert value to seek for a positive evaluation";
+	wxString _cmdName = "ping google.com";
+	wxString _positiveVal = "result for positive evaluation";
 	wxString _counters = "";
 	bool _isActive = true;
 	bool _isSequential = false;

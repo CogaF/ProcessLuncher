@@ -1,3 +1,8 @@
+/*
+    This is an application that was created by me Coga Fation but truth be told 
+    that without the help of ChatGpt it could have taken many many hours 
+    I'm taking for granted that I would have reached the same results which is a long shot
+*/
 #pragma once
 #include <wx/wx.h>
 #include <wx/listctrl.h>
@@ -14,6 +19,7 @@
 #include <cstdio>
 #include <memory>
 #include <cmdgui.h>
+#include <wx/clipbrd.h>
 class MainWindow : public wxFrame
 {
 public:
@@ -25,6 +31,11 @@ public:
     cmdgui*         Cmd4;
     cmdgui*         Cmd5;
     cmdgui*         Cmd6;
+    cmdgui*         Cmd7;
+    cmdgui*         Cmd8;
+    cmdgui*         Cmd9;
+    cmdgui*         Cmd10;
+    cmdgui*         Cmd11;
     //Main Sizer that will contain all components
     wxBoxSizer* mainSizer;
     wxBoxSizer* componentsSizer;
@@ -48,7 +59,17 @@ public:
     int passes_cmd5 = 0;
     int failed_cmd5 = 0;
     int passes_cmd6 = 0;
-    int failed_cmd6 = 0; 
+    int failed_cmd6 = 0;
+    int passes_cmd7 = 0;
+    int failed_cmd7 = 0;
+    int passes_cmd8 = 0;
+    int failed_cmd8 = 0;
+    int passes_cmd9 = 0;
+    int failed_cmd9 = 0;
+    int passes_cmd10 = 0;
+    int failed_cmd10 = 0;
+    int passes_cmd11 = 0;
+    int failed_cmd11 = 0;
     //Value that will be used to keep track of threads that have finished their task
     //in order to prevend running newthread while previous ones aren't finished yet
     int finishedThreads = 0;
@@ -67,9 +88,12 @@ private:
     void AddMessage(const wxString& timestamp, const wxString& message);
     wxString get_current_timestamp();
     std::string RunCommand(const std::string& command);
-    void StartThread(const wxString& input);
-    void OnThreadResult(wxCommandEvent& event);
-
+    void StartThread(const wxString& input, int commandIndex);
+    void OnThreadResult(wxCommandEvent& event); 
+    void OnKeyDown(wxKeyEvent& event);
+    void CopySelectedRow(); 
+    void OnMouseMove(wxMouseEvent& event);
+    void SelectAllItems();
 };
 
 wxDEFINE_EVENT(wxEVT_THREAD_RESULT, wxCommandEvent);

@@ -1,3 +1,9 @@
+/*
+	This is an application that was created by me Coga Fation but truth be told
+	that without the help of ChatGpt it could have taken many many hours
+	I'm taking for granted that I would have reached the same results which is a long shot
+*/
+
 #include "cmdgui.h"
 
 cmdgui::cmdgui(wxPanel* parentPanel) {
@@ -50,18 +56,22 @@ wxBoxSizer* cmdgui::getPointer() {
 }
 
 bool cmdgui::isActive() {
+	_isActive = Cmd_active_CB->GetValue();
 	return _isActive;
 }
 
 bool cmdgui::isSequential() {
+	_isSequential = Cmd_Sequential_CB->GetValue();
 	return _isSequential;
 }
 
 wxString cmdgui::getCmd() {
+	_cmdName = Cmd_txt->GetValue();
 	return _cmdName;
 }
 
 wxString cmdgui::getPostiveVal() {
+	_positiveVal = Cmd_Res->GetValue();
 	return _positiveVal;
 }
 
