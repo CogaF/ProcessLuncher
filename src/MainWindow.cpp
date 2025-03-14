@@ -14,7 +14,7 @@ MainWindow::MainWindow()
         "Greeting from application");
     menuFile->AppendSeparator();
     menuFile->Append(wxID_EXIT);
-
+    mainPanel = new wxPanel(this, windowIDs::ID_MAIN_PANEL);
     wxMenu* menuHelp = new wxMenu;
     menuHelp->Append(wxID_ABOUT);
 
@@ -34,13 +34,16 @@ MainWindow::MainWindow()
 
     SetStatusText("Command Runner!");
     resultsSizer = new wxBoxSizer(wxVERTICAL);
-    resultList = new wxListCtrl(this, windowIDs::ID_COMMAND_LIST, wxDefaultPosition, wxSize(950,350), wxLC_REPORT | wxLC_SINGLE_SEL);
+    mainSizer = new wxBoxSizer(wxVERTICAL);
+    componentsSizer = new wxBoxSizer(wxVERTICAL); 
+    cmdsSizer = new wxBoxSizer(wxVERTICAL);
+    resultList = new wxListCtrl(mainPanel, windowIDs::ID_COMMAND_LIST, wxDefaultPosition, wxSize(1550, 350), wxLC_REPORT | wxLC_SINGLE_SEL);
 
     // Add columns for timestamp and message
     resultList->InsertColumn(0, "Timestamp");
     resultList->InsertColumn(1, "Message");
 
-    runBT = new wxButton(this, windowIDs::ID_RUN_COMMAND_BT, "Run command", wxDefaultPosition, wxDefaultSize );
+    runBT = new wxButton(mainPanel, windowIDs::ID_RUN_COMMAND_BT, "Run command", wxDefaultPosition, wxDefaultSize );
     // Add messages to the list (with timestamp and message content)
     //AddMessage(get_current_timestamp(), "Hello, this is the first message.");
     //AddMessage(get_current_timestamp(), "Second message appears here.");
@@ -51,14 +54,47 @@ MainWindow::MainWindow()
     // Set the proportions: Message is 5 times the width of Timestamp
     int timestampWidth = width / 6;   // 1 part of the total 6 parts (timestamp + 5 * message)
     int messageWidth = timestampWidth * 5; // 5 parts for message
-
     // Set the column widths
     resultList->SetColumnWidth(0, timestampWidth); // Timestamp column
     resultList->SetColumnWidth(1, messageWidth);   // Message column
+    Cmd1 = new cmdgui(mainPanel);
+    Cmd2 = new cmdgui(mainPanel);
+    Cmd3 = new cmdgui(mainPanel);
+    Cmd4 = new cmdgui(mainPanel);
+    Cmd5 = new cmdgui(mainPanel);
+    Cmd6 = new cmdgui(mainPanel, windowIDs::ID_GUI_CLASS+60,true, true, "commandName", "positiveResult", "PASS = 0 :: FAIL = 0");
+    Cmd1->setCounters("CMD counters 1");
+    Cmd2->setCounters("CMD counters 2");
+    Cmd3->setCounters("CMD counters 3");
+    Cmd4->setCounters("CMD counters 4");
+    Cmd5->setCounters("CMD counters 5");
+    wxBoxSizer* cmd1_sz = Cmd1->getPointer();
+    wxBoxSizer* cmd2_sz = Cmd2->getPointer();
+    wxBoxSizer* cmd3_sz = Cmd3->getPointer();
+    wxBoxSizer* cmd4_sz = Cmd4->getPointer();
+    wxBoxSizer* cmd5_sz = Cmd5->getPointer();
+    wxBoxSizer* cmd6_sz = Cmd6->getPointer();
+    cmdsSizer->Add(cmd1_sz, 1, wxEXPAND | wxALL, 1);
+    cmdsSizer->Add(cmd2_sz, 1, wxEXPAND | wxALL, 1);
+    cmdsSizer->Add(cmd3_sz, 1, wxEXPAND | wxALL, 1);
+    cmdsSizer->Add(cmd4_sz, 1, wxEXPAND | wxALL, 1);
+    cmdsSizer->Add(cmd5_sz, 1, wxEXPAND | wxALL, 1);
+    cmdsSizer->Add(cmd6_sz, 1, wxEXPAND | wxALL, 1);
+    //cmdsSizer->Add(cmd6_sz, 1, wxEXPAND | wxALL, 1);
 
-    resultsSizer->Add(runBT, 1, wxEXPAND | wxALL, 3);
-    resultsSizer->Add(resultList, 5, wxEXPAND | wxALL, 3);
-    SetSizerAndFit(resultsSizer);
+    resultsSizer->Add(resultList, 1, wxEXPAND | wxALL, 1);
+
+    componentsSizer->Add(runBT, 1, wxEXPAND | wxALL, 1);
+    componentsSizer->Add(cmdsSizer, 1, wxEXPAND | wxALL, 1);
+    componentsSizer->Add(resultsSizer, 1, wxEXPAND | wxALL, 1);
+
+    mainPanel->SetSizer(componentsSizer);
+
+    mainSizer->Add(mainPanel);
+
+    SetSizer(mainSizer);
+    mainPanel->Show(true);
+    //mainSizer->Add(mainPanel);
 }
 
 void MainWindow::OnExit(wxCommandEvent& event)

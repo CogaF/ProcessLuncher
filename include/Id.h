@@ -4,6 +4,7 @@
 namespace windowIDs {
     enum id {
         MAINWINDOW = wxID_HIGHEST + 1,
+        ID_MAIN_PANEL,
         ID_Hello,
         ID_RUN_COMMAND_BT,
         ID_COMMAND_LIST,
@@ -25,6 +26,8 @@ namespace windowIDs {
         ID_4_RES,
         ID_5_RES,
         ID_6_RES,
+
+        ID_GUI_CLASS = wxID_HIGHEST + 251
     };
 }
 

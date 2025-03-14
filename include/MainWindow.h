@@ -13,46 +13,21 @@
 #include "Id.h"
 #include <cstdio>
 #include <memory>
+#include <cmdgui.h>
 class MainWindow : public wxFrame
 {
 public:
     MainWindow();
     wxPanel*        mainPanel;
-    //definition of six sizers in order to keep all window comoponents of each command properties organized
-    wxBoxSizer*     _1_Cmd_sz;
-    wxBoxSizer*     _2_Cmd_sz;
-    wxBoxSizer*     _3_Cmd_sz;
-    wxBoxSizer*     _4_Cmd_sz;
-    wxBoxSizer*     _5_Cmd_sz;
-    wxBoxSizer*     _6_Cmd_sz;
-    //Definition of checkboxes in order to select it one command should be activated or not
-    wxCheckBox*     _1_Cmd_CB;
-    wxCheckBox*     _2_Cmd_CB;
-    wxCheckBox*     _3_Cmd_CB;
-    wxCheckBox*     _4_Cmd_CB;
-    wxCheckBox*     _5_Cmd_CB;
-    wxCheckBox*     _6_Cmd_CB;
-    //definition of textcontrols where the exact name of the command to run or the address of the *.bat file
-    wxTextCtrl*     _1_Cmd_txt;
-    wxTextCtrl*     _2_Cmd_txt;
-    wxTextCtrl*     _3_Cmd_txt;
-    wxTextCtrl*     _4_Cmd_txt;
-    wxTextCtrl*     _5_Cmd_txt;
-    wxTextCtrl*     _6_Cmd_txt;
-    //definition of textcontrols where the app shall consider as success from the result returned from the command/bat 
-    wxTextCtrl*     _1_Cmd_Res;
-    wxTextCtrl*     _2_Cmd_Res;
-    wxTextCtrl*     _3_Cmd_Res;
-    wxTextCtrl*     _4_Cmd_Res;
-    wxTextCtrl*     _5_Cmd_Res;
-    wxTextCtrl*     _6_Cmd_Res;
-    //definition os static text where the user can read the overall results for each command (aka passes and fails)
-    wxStaticText*   _1_Cmd_counters;
-    wxStaticText*   _2_Cmd_counters;
-    wxStaticText*   _3_Cmd_counters;
-    wxStaticText*   _4_Cmd_counters;
-    wxStaticText*   _5_Cmd_counters;
-    wxStaticText*   _6_Cmd_counters;
+    cmdgui*         Cmd1;
+    cmdgui*         Cmd2;
+    cmdgui*         Cmd3;
+    cmdgui*         Cmd4;
+    cmdgui*         Cmd5;
+    cmdgui*         Cmd6;
+    //Main Sizer that will contain all components
+    wxBoxSizer* mainSizer;
+    wxBoxSizer* componentsSizer;
     //Sizer for commands for now contains only run button
     wxBoxSizer*     cmdsSizer;
     //sizer for the list
