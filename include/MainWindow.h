@@ -20,10 +20,14 @@
 #include <memory>
 #include <cmdgui.h>
 #include <wx/clipbrd.h>
+
+#define SEQUENTIAL true
+
 class MainWindow : public wxFrame
 {
 public:
     MainWindow();
+    bool stopAtSequential = false;
     wxPanel*        mainPanel;
     cmdgui*         Cmd1;
     cmdgui*         Cmd2;
@@ -88,12 +92,17 @@ private:
     void AddMessage(const wxString& timestamp, const wxString& message);
     wxString get_current_timestamp();
     std::string RunCommand(const std::string& command);
-    void StartThread(const wxString& input, int commandIndex);
+    void StartThread(const wxString& input, int commandIndex, bool sequentialStatus);
     void OnThreadResult(wxCommandEvent& event); 
     void OnKeyDown(wxKeyEvent& event);
     void CopySelectedRow(); 
     void OnMouseMove(wxMouseEvent& event);
     void SelectAllItems();
+    void OnEnable(wxCommandEvent& event);
+    void OnDisable(wxCommandEvent& event);
+    void OnCheckBoxEvent(wxCommandEvent& event);
+    void EnableCmds();
+    void DisableCmds();
 };
 
 wxDEFINE_EVENT(wxEVT_THREAD_RESULT, wxCommandEvent);

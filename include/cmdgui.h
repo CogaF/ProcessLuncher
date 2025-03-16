@@ -11,8 +11,6 @@ class cmdgui
 {
 private:
 	wxBoxSizer*		Cmd_sz;
-	wxCheckBox*		Cmd_active_CB;
-	wxCheckBox*		Cmd_sequential_CB;
 	wxCheckBox*		Cmd_running_CB;
 	wxTextCtrl*		Cmd_txt;
 	wxTextCtrl*		Cmd_res;
@@ -24,20 +22,23 @@ private:
 	bool _isActive = true;
 	bool _isSequential = false;
 	int _thisId = windowIDs::ID_GUI_CLASS;
+	int _indexOfGui = 0;
 	bool _guiExists = false;
 	bool _isRunning = false;
 
 public:
+	wxCheckBox* Cmd_active_CB;
+	wxCheckBox* Cmd_sequential_CB;
 	cmdgui(wxPanel* parentPanel);
-	cmdgui(wxPanel* parentPanel, int currId);
-	cmdgui(wxPanel* parentPanel, int currId, bool isActive, bool sequential, wxString cmdName, wxString positiveValue, wxString counters_s);
+	cmdgui(wxPanel* parentPanel, int guiIndex);
+	cmdgui(wxPanel* parentPanel, int guiIndex, bool isActive, bool sequential, wxString cmdName, wxString positiveValue, wxString counters_s);
 	~cmdgui();
 	bool isActive();
 	bool isSequential();
 	wxString getCmd();
 	wxString getPostiveVal();
 	bool setCounters(wxString countersString);
-	bool buildDefault();
+	void buildDefault(int indexOfGuid);
 	bool setSequential(bool sequentialStatus);
 	bool setActive(bool activeStatus);
 	bool setCmd(wxString cmdName);
@@ -47,6 +48,10 @@ public:
 	bool update();
 	bool setRunning(bool runninglStatus);
 	bool getRunning();
+	void disable();
+	void enable();
+	void disableEditables();
+	void enableEditables();
 	wxBoxSizer* getPointer();
 };
 

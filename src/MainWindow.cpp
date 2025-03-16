@@ -21,9 +21,20 @@ MainWindow::MainWindow()
     wxMenu* menuHelp = new wxMenu;
     menuHelp->Append(wxID_ABOUT);
 
+    wxMenu* settingsMenu = new wxMenu;
+    settingsMenu->Append(windowIDs::ID_ENABLE_EDIT, "&Enable Edit\tCtrl-E",
+        "Enable edit of commands properties");
+    settingsMenu->Append(windowIDs::ID_DISABLE_EDIT, "&Disable Edit\tCtrl-D",
+        "Disable edit of commands properties");
+
     wxMenuBar* menuBar = new wxMenuBar;
-    menuBar->Append(menuFile, "&File");
-    menuBar->Append(menuHelp, "&Info");
+    menuBar->Append(menuFile,       "&File");
+    menuBar->Append(settingsMenu,   "&Settings");
+    menuBar->Append(menuHelp,       "&Info");
+
+
+
+
 
     SetMenuBar(menuBar);
 
@@ -35,7 +46,10 @@ MainWindow::MainWindow()
     Bind(wxEVT_MENU, &MainWindow::OnHello, this, windowIDs::ID_Hello);
     Bind(wxEVT_MENU, &MainWindow::OnAbout, this, wxID_ABOUT);
     Bind(wxEVT_MENU, &MainWindow::OnExit, this, wxID_EXIT);
+    Bind(wxEVT_MENU, &MainWindow::OnEnable, this, windowIDs::ID_ENABLE_EDIT);
+    Bind(wxEVT_MENU, &MainWindow::OnDisable, this, windowIDs::ID_DISABLE_EDIT);
     Bind(wxEVT_BUTTON, &MainWindow::onRunCommand, this, windowIDs::ID_RUN_COMMAND_BT);
+    Bind(wxEVT_CHECKBOX, &MainWindow::OnCheckBoxEvent, this);
     Bind(wxEVT_THREAD_RESULT, &MainWindow::OnThreadResult, this);
     resultList->Bind(wxEVT_KEY_DOWN, &MainWindow::OnKeyDown, this);
     resultList->Bind(wxEVT_MOTION, &MainWindow::OnMouseMove, this);
@@ -62,17 +76,43 @@ MainWindow::MainWindow()
     // Set the column widths
     resultList->SetColumnWidth(0, timestampWidth); // Timestamp column
     resultList->SetColumnWidth(1, messageWidth);   // Message column
-    Cmd1 = new cmdgui(mainPanel);
-    Cmd2 = new cmdgui(mainPanel);
-    Cmd3 = new cmdgui(mainPanel);
-    Cmd4 = new cmdgui(mainPanel);
-    Cmd5 = new cmdgui(mainPanel);
-    Cmd6 = new cmdgui(mainPanel);
-    Cmd7 = new cmdgui(mainPanel);
-    Cmd8 = new cmdgui(mainPanel);
-    Cmd9 = new cmdgui(mainPanel);
-    Cmd10 = new cmdgui(mainPanel);
-    Cmd11 = new cmdgui(mainPanel);
+
+
+    //Cmd1 = new cmdgui(mainPanel);
+    //Cmd2 = new cmdgui(mainPanel);
+    //Cmd3 = new cmdgui(mainPanel);
+    //Cmd4 = new cmdgui(mainPanel);
+    //Cmd5 = new cmdgui(mainPanel);
+    //Cmd6 = new cmdgui(mainPanel);
+    //Cmd7 = new cmdgui(mainPanel);
+    //Cmd8 = new cmdgui(mainPanel);
+    //Cmd9 = new cmdgui(mainPanel);
+    //Cmd10 = new cmdgui(mainPanel);
+    //Cmd11 = new cmdgui(mainPanel);
+
+    Cmd1 = new cmdgui(mainPanel, 0);
+    Cmd2 = new cmdgui(mainPanel, 1);
+    Cmd3 = new cmdgui(mainPanel, 2);
+    Cmd4 = new cmdgui(mainPanel, 3);
+    Cmd5 = new cmdgui(mainPanel, 4);
+    Cmd6 = new cmdgui(mainPanel, 5);
+    Cmd7 = new cmdgui(mainPanel, 6);
+    Cmd8 = new cmdgui(mainPanel, 7);
+    Cmd9 = new cmdgui(mainPanel, 8);
+    Cmd10 = new cmdgui(mainPanel, 9);
+    Cmd11 = new cmdgui(mainPanel, 10);
+
+    //Cmd1->disable();
+    //Cmd2->disable();
+    //Cmd3->disable();
+    //Cmd4->disable();
+    //Cmd5->disable();
+    //Cmd6->disable();
+    //Cmd7->disable();
+    //Cmd8->disable();
+    //Cmd9->disable();
+    //Cmd10->disable();
+    //Cmd11->disable();
 
     Cmd1->setCounters("CMD counters 1");
     Cmd2->setCounters("CMD counters 2");
@@ -136,6 +176,213 @@ void MainWindow::OnExit(wxCommandEvent& event)
 {
     Close(true);
 }
+
+
+void MainWindow::OnCheckBoxEvent(wxCommandEvent& event)
+{
+    if (event.GetId() == Cmd1->getCurrId()) {
+        if (Cmd1->Cmd_active_CB->GetValue()) {
+            Cmd1->enable();
+        }
+        else {
+            Cmd1->disable();
+        }
+    }
+    if (event.GetId() == Cmd1->getCurrId()+1) {
+        if (Cmd1->Cmd_sequential_CB->GetValue()) {
+            Cmd1->setSequential(true);
+        }
+        else {
+            Cmd1->setSequential(false);
+        }
+    }
+    
+
+    if (event.GetId() == Cmd2->getCurrId()) {
+        if (Cmd2->Cmd_active_CB->GetValue()) {
+            Cmd2->enable();
+        }
+        else {
+            Cmd2->disable();
+        }
+    }
+    if (event.GetId() == Cmd2->getCurrId()+1) {
+        if (Cmd2->Cmd_sequential_CB->GetValue()) {
+            Cmd2->setSequential(true);
+        }
+        else {
+            Cmd2->setSequential(false);
+        }
+    }
+
+
+    if (event.GetId() == Cmd3->getCurrId()) {
+        if (Cmd3->Cmd_active_CB->GetValue()) {
+            Cmd3->enable();
+        }
+        else {
+            Cmd3->disable();
+        }
+    }
+    if (event.GetId() == Cmd3->getCurrId()+1) {
+        if (Cmd3->Cmd_sequential_CB->GetValue()) {
+            Cmd3->setSequential(true);
+        }
+        else {
+            Cmd3->setSequential(false);
+        }
+    }
+
+
+    if (event.GetId() == Cmd4->getCurrId()) {
+        if (Cmd4->Cmd_active_CB->GetValue()) {
+            Cmd4->enable();
+        }
+        else {
+            Cmd4->disable();
+        }
+    }
+    if (event.GetId() == Cmd4->getCurrId()+1) {
+        if (Cmd4->Cmd_sequential_CB->GetValue()) {
+            Cmd4->setSequential(true);
+        }
+        else {
+            Cmd4->setSequential(false);
+        }
+    }
+
+
+
+    if (event.GetId() == Cmd5->getCurrId()) {
+        if (Cmd5->Cmd_active_CB->GetValue()) {
+            Cmd5->enable();
+        }
+        else {
+            Cmd5->disable();
+        }
+    }
+    if (event.GetId() == Cmd5->getCurrId()+1) {
+        if (Cmd5->Cmd_sequential_CB->GetValue()) {
+            Cmd5->setSequential(true);
+        }
+        else {
+            Cmd5->setSequential(false);
+        }
+    }
+
+
+    if (event.GetId() == Cmd6->getCurrId()) {
+        if (Cmd6->Cmd_active_CB->GetValue()) {
+            Cmd6->enable();
+        }
+        else {
+            Cmd6->disable();
+        }
+    }
+    if (event.GetId() == Cmd6->getCurrId()+1) {
+        if (Cmd6->Cmd_sequential_CB->GetValue()) {
+            Cmd6->setSequential(true);
+        }
+        else {
+            Cmd6->setSequential(false);
+        }
+    }
+
+
+
+    if (event.GetId() == Cmd7->getCurrId()) {
+        if (Cmd7->Cmd_active_CB->GetValue()) {
+            Cmd7->enable();
+        }
+        else {
+            Cmd7->disable();
+        }
+    }
+    if (event.GetId() == Cmd7->getCurrId()+1) {
+        if (Cmd7->Cmd_sequential_CB->GetValue()) {
+            Cmd7->setSequential(true);
+        }
+        else {
+            Cmd7->setSequential(false);
+        }
+    }
+
+
+
+    if (event.GetId() == Cmd8->getCurrId()) {
+        if (Cmd8->Cmd_active_CB->GetValue()) {
+            Cmd8->enable();
+        }
+        else {
+            Cmd8->disable();
+        }
+    }
+    if (event.GetId() == Cmd8->getCurrId()+1) {
+        if (Cmd8->Cmd_sequential_CB->GetValue()) {
+            Cmd8->setSequential(true);
+        }
+        else {
+            Cmd8->setSequential(false);
+        }
+    }
+
+
+
+    if (event.GetId() == Cmd9->getCurrId()) {
+        if (Cmd9->Cmd_active_CB->GetValue()) {
+            Cmd9->enable();
+        }
+        else {
+            Cmd9->disable();
+        }
+    }
+    if (event.GetId() == Cmd9->getCurrId()+1) {
+        if (Cmd9->Cmd_sequential_CB->GetValue()) {
+            Cmd9->setSequential(true);
+        }
+        else {
+            Cmd9->setSequential(false);
+        }
+    }
+
+
+
+    if (event.GetId() == Cmd10->getCurrId()) {
+        if (Cmd10->Cmd_active_CB->GetValue()) {
+            Cmd10->enable();
+        }
+        else {
+            Cmd10->disable();
+        }
+    }
+    if (event.GetId() == Cmd10->getCurrId()+1) {
+        if (Cmd10->Cmd_sequential_CB->GetValue()) {
+            Cmd10->setSequential(true);
+        }
+        else {
+            Cmd10->setSequential(false);
+        }
+    }
+
+
+    if (event.GetId() == Cmd11->getCurrId()) {
+        if (Cmd11->Cmd_active_CB->GetValue()) {
+            Cmd11->enable();
+        }
+        else {
+            Cmd11->disable();
+        }
+    }
+    if (event.GetId() == Cmd11->getCurrId()+1) {
+        if (Cmd11->Cmd_sequential_CB->GetValue()) {
+            Cmd11->setSequential(true);
+        }
+        else {
+            Cmd11->setSequential(false);
+        }
+    }
+}
+
 void MainWindow::OnAbout(wxCommandEvent& event)
 {
     wxString ToPrint = "This APP can run multiple \"*.bat\" file or CMD like commands in separated threads (aka simultaneously)\n";
@@ -146,6 +393,48 @@ void MainWindow::OnAbout(wxCommandEvent& event)
 void MainWindow::OnHello(wxCommandEvent& event)
 {
     wxLogMessage("wxWidgets 3.2.6 Inside");
+}
+
+
+void MainWindow::OnEnable(wxCommandEvent& event)
+{
+    EnableCmds();
+}
+
+void MainWindow::EnableCmds()
+{
+    Cmd1->enableEditables();
+    Cmd2->enableEditables();
+    Cmd3->enableEditables();
+    Cmd4->enableEditables();
+    Cmd5->enableEditables();
+    Cmd6->enableEditables();
+    Cmd7->enableEditables();
+    Cmd8->enableEditables();
+    Cmd9->enableEditables();
+    Cmd10->enableEditables();
+    Cmd11->enableEditables();
+}
+
+
+void MainWindow::OnDisable(wxCommandEvent& event)
+{
+    DisableCmds();
+}
+
+void MainWindow::DisableCmds()
+{
+    Cmd1->disableEditables();
+    Cmd2->disableEditables();
+    Cmd3->disableEditables();
+    Cmd4->disableEditables();
+    Cmd5->disableEditables();
+    Cmd6->disableEditables();
+    Cmd7->disableEditables();
+    Cmd8->disableEditables();
+    Cmd9->disableEditables();
+    Cmd10->disableEditables();
+    Cmd11->disableEditables();
 }
 
 void MainWindow::OnKeyDown(wxKeyEvent& event) {
@@ -233,6 +522,7 @@ void MainWindow::AddMessage(const wxString& timestamp, const wxString& message) 
 
 void MainWindow::onRunCommand(wxCommandEvent& event)
 {
+    DisableCmds();
     bool runCommands = true;
     if (Cmd1->getRunning() || Cmd2->getRunning() || Cmd3->getRunning() || Cmd4->getRunning() ||
         Cmd5->getRunning() || Cmd6->getRunning() || Cmd7->getRunning() || Cmd8->getRunning() ||
@@ -256,7 +546,12 @@ void MainWindow::onRunCommand(wxCommandEvent& event)
         if (!Cmd1->getRunning()) {
             if (Cmd1->isActive()) {
                 if (Cmd1->setRunning(true)) {
-                    StartThread(Cmd1->getCmd(), 1);
+                    if (Cmd1->isSequential()) {
+                        StartThread(Cmd1->getCmd(), 1, true);
+                    }
+                    else {
+                        StartThread(Cmd1->getCmd(), 1, false);
+                    }
                 }
                 else {
                     AddMessage(get_current_timestamp(), wxString::Format("Couldn't set the CMD 1 gui to BUSY"));
@@ -266,11 +561,17 @@ void MainWindow::onRunCommand(wxCommandEvent& event)
         else {
             AddMessage(get_current_timestamp(), wxString::Format("Thread for CMD 1 already active"));
         }
+        wxYield();
 
         if (!Cmd2->getRunning()) {
             if (Cmd2->isActive()) {
                 if (Cmd2->setRunning(true)) {
-                    StartThread(Cmd2->getCmd(), 2);
+                    if (Cmd2->isSequential()) {
+                        StartThread(Cmd2->getCmd(), 2, true);
+                    }
+                    else {
+                        StartThread(Cmd2->getCmd(), 2, false);
+                    }
                 }
                 else {
                     AddMessage(get_current_timestamp(), wxString::Format("Couldn't set the CMD 2 gui to BUSY"));
@@ -280,11 +581,17 @@ void MainWindow::onRunCommand(wxCommandEvent& event)
         else {
             AddMessage(get_current_timestamp(), wxString::Format("Thread for CMD 2 already active"));
         }
+        wxYield();
 
         if (!Cmd3->getRunning()) {
             if (Cmd3->isActive()) {
                 if (Cmd3->setRunning(true)) {
-                    StartThread(Cmd3->getCmd(), 3);
+                    if (Cmd3->isSequential()) {
+                        StartThread(Cmd3->getCmd(), 3, true);
+                    }
+                    else {
+                        StartThread(Cmd3->getCmd(), 3, false);
+                    }
                 }
                 else {
                     AddMessage(get_current_timestamp(), wxString::Format("Couldn't set the CMD 3 gui to BUSY"));
@@ -294,11 +601,17 @@ void MainWindow::onRunCommand(wxCommandEvent& event)
         else {
             AddMessage(get_current_timestamp(), wxString::Format("Thread for CMD 3 already active"));
         }
+        wxYield();
 
         if (!Cmd4->getRunning()) {
             if (Cmd4->isActive()) {
                 if (Cmd4->setRunning(true)) {
-                    StartThread(Cmd4->getCmd(), 4);
+                    if (Cmd4->isSequential()) {
+                        StartThread(Cmd4->getCmd(), 4, true);
+                    }
+                    else {
+                        StartThread(Cmd4->getCmd(), 4, false);
+                    }
                 }
                 else {
                     AddMessage(get_current_timestamp(), wxString::Format("Couldn't set the CMD 4 gui to BUSY"));
@@ -308,11 +621,17 @@ void MainWindow::onRunCommand(wxCommandEvent& event)
         else {
             AddMessage(get_current_timestamp(), wxString::Format("Thread for CMD 4 already active"));
         }
+        wxYield();
 
         if (!Cmd5->getRunning()) {
             if (Cmd5->isActive()) {
                 if (Cmd5->setRunning(true)) {
-                    StartThread(Cmd5->getCmd(), 5);
+                    if (Cmd5->isSequential()) {
+                        StartThread(Cmd5->getCmd(), 5, true);
+                    }
+                    else {
+                        StartThread(Cmd5->getCmd(), 5, false);
+                    }
                 }
                 else {
                     AddMessage(get_current_timestamp(), wxString::Format("Couldn't set the CMD 5 gui to BUSY"));
@@ -322,11 +641,17 @@ void MainWindow::onRunCommand(wxCommandEvent& event)
         else {
             AddMessage(get_current_timestamp(), wxString::Format("Thread for CMD 5 already active"));
         }
+        wxYield();
 
         if (!Cmd6->getRunning()) {
             if (Cmd6->isActive()) {
                 if (Cmd6->setRunning(true)) {
-                    StartThread(Cmd6->getCmd(), 6);
+                    if (Cmd6->isSequential()) {
+                        StartThread(Cmd6->getCmd(), 6, true);
+                    }
+                    else {
+                        StartThread(Cmd6->getCmd(), 6, false);
+                    }
                 }
                 else {
                     AddMessage(get_current_timestamp(), wxString::Format("Couldn't set the CMD 6 gui to BUSY"));
@@ -336,11 +661,17 @@ void MainWindow::onRunCommand(wxCommandEvent& event)
         else {
             AddMessage(get_current_timestamp(), wxString::Format("Thread for CMD 6 already active"));
         }
+        wxYield();
 
         if (!Cmd7->getRunning()) {
             if (Cmd7->isActive()) {
                 if (Cmd7->setRunning(true)) {
-                    StartThread(Cmd7->getCmd(), 7);
+                    if (Cmd7->isSequential()) {
+                        StartThread(Cmd7->getCmd(), 7, true);
+                    }
+                    else {
+                        StartThread(Cmd7->getCmd(), 7, false);
+                    }
                 }
                 else {
                     AddMessage(get_current_timestamp(), wxString::Format("Couldn't set the CMD 7 gui to BUSY"));
@@ -350,11 +681,17 @@ void MainWindow::onRunCommand(wxCommandEvent& event)
         else {
             AddMessage(get_current_timestamp(), wxString::Format("Thread for CMD 7 already active"));
         }
+        wxYield();
 
         if (!Cmd8->getRunning()) {
             if (Cmd8->isActive()) {
                 if (Cmd8->setRunning(true)) {
-                    StartThread(Cmd8->getCmd(), 8);
+                    if (Cmd8->isSequential()) {
+                        StartThread(Cmd8->getCmd(), 8, true);
+                    }
+                    else {
+                        StartThread(Cmd8->getCmd(), 8, false);
+                    }
                 }
                 else {
                     AddMessage(get_current_timestamp(), wxString::Format("Couldn't set the CMD 8 gui to BUSY"));
@@ -364,11 +701,17 @@ void MainWindow::onRunCommand(wxCommandEvent& event)
         else {
             AddMessage(get_current_timestamp(), wxString::Format("Thread for CMD 8 already active"));
         }
+        wxYield();
 
         if (!Cmd9->getRunning()) {
             if (Cmd9->isActive()) {
                 if (Cmd9->setRunning(true)) {
-                    StartThread(Cmd9->getCmd(), 9);
+                    if (Cmd9->isSequential()) {
+                        StartThread(Cmd9->getCmd(), 9, true);
+                    }
+                    else {
+                        StartThread(Cmd9->getCmd(), 9, false);
+                    }
                 }
                 else {
                     AddMessage(get_current_timestamp(), wxString::Format("Couldn't set the CMD 9 gui to BUSY"));
@@ -378,11 +721,17 @@ void MainWindow::onRunCommand(wxCommandEvent& event)
         else {
             AddMessage(get_current_timestamp(), wxString::Format("Thread for CMD 9 already active"));
         }
+        wxYield();
 
         if (!Cmd10->getRunning()) {
             if (Cmd10->isActive()) {
                 if (Cmd10->setRunning(true)) {
-                    StartThread(Cmd10->getCmd(), 10);
+                    if (Cmd10->isSequential()) {
+                        StartThread(Cmd10->getCmd(), 10, true);
+                    }
+                    else {
+                        StartThread(Cmd10->getCmd(), 10, false);
+                    }
                 }
                 else {
                     AddMessage(get_current_timestamp(), wxString::Format("Couldn't set the CMD 10 gui to BUSY"));
@@ -392,11 +741,17 @@ void MainWindow::onRunCommand(wxCommandEvent& event)
         else {
             AddMessage(get_current_timestamp(), wxString::Format("Thread for CMD 10 already active"));
         }
+        wxYield();
 
         if (!Cmd11->getRunning()) {
             if (Cmd11->isActive()) {
                 if (Cmd11->setRunning(true)) {
-                    StartThread(Cmd11->getCmd(), 11);
+                    if (Cmd11->isSequential()) {
+                        StartThread(Cmd11->getCmd(), 11, true);
+                    }
+                    else {
+                        StartThread(Cmd11->getCmd(), 11, false);
+                    }
                 }
                 else {
                     AddMessage(get_current_timestamp(), wxString::Format("Couldn't set the CMD 11 gui to BUSY"));
@@ -406,26 +761,43 @@ void MainWindow::onRunCommand(wxCommandEvent& event)
         else {
             AddMessage(get_current_timestamp(), wxString::Format("Thread for CMD 11 already active"));
         }
+        wxYield();
     }
 
 }
 
-void MainWindow::StartThread(const wxString& input, int CommandIndex) {
+void MainWindow::StartThread(const wxString& input, int CommandIndex, bool sequentialStatus) {
     // Start a background thread
+    if (sequentialStatus != SEQUENTIAL) {
+        std::thread([this, input, CommandIndex]() {
+            std::string result = RunCommand(input.ToStdString());
+
+            wxYield();
+            // Create and post an event to the main thread
+            wxCommandEvent event(wxEVT_THREAD_RESULT);
+            event.SetString(result);
+            event.SetInt(CommandIndex);
+            wxQueueEvent(this, event.Clone());
+            }).detach();  // Detach so the thread runs independently
+    }else{
+
     std::thread([this, input, CommandIndex]() {
         std::string result = RunCommand(input.ToStdString());
 
+        wxYield();
         // Create and post an event to the main thread
         wxCommandEvent event(wxEVT_THREAD_RESULT);
         event.SetString(result);
         event.SetInt(CommandIndex);
         wxQueueEvent(this, event.Clone());
-        }).detach();  // Detach so the thread runs independently
-
-#ifdef _DEBUG
-    AddMessage(get_current_timestamp(), wxString::Format("Started thread for CMD %d", CommandIndex));
-#endif
+        }).join();  // Join to run it sequentially
+    }
+    wxYield();
+    #ifdef _DEBUG
+        AddMessage(get_current_timestamp(), wxString::Format("Started thread for CMD %d", CommandIndex));
+    #endif
 }
+
 
 // Function to run the command and capture output
 std::string MainWindow::RunCommand(const std::string& command) {
@@ -442,7 +814,7 @@ std::string MainWindow::RunCommand(const std::string& command) {
     PROCESS_INFORMATION pi = { 0 };
 
     si.dwFlags = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
-    si.wShowWindow = SW_SHOWNORMAL;  // Hides the window
+    si.wShowWindow = SW_HIDE;  // Hides the window
     si.hStdOutput = hWrite;
     si.hStdError = hWrite;  // Redirect stderr to stdout
 
@@ -458,10 +830,11 @@ std::string MainWindow::RunCommand(const std::string& command) {
 
     // Read the command output
     std::string result;
-    char buffer[128];
+    char buffer[512];
     DWORD bytesRead;
 
     while (ReadFile(hRead, buffer, sizeof(buffer) - 1, &bytesRead, NULL) && bytesRead > 0) {
+        wxYield();
         buffer[bytesRead] = '\0';
         result += buffer;
     }
@@ -471,7 +844,7 @@ std::string MainWindow::RunCommand(const std::string& command) {
     WaitForSingleObject(pi.hProcess, INFINITE);
     CloseHandle(pi.hProcess);
     CloseHandle(pi.hThread);
-
+    wxYield();
     return result;
 }
 
