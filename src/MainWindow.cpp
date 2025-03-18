@@ -78,19 +78,6 @@ MainWindow::MainWindow()
     resultList->SetColumnWidth(0, timestampWidth); // Timestamp column
     resultList->SetColumnWidth(1, messageWidth);   // Message column
 
-
-    //Cmd1 = new cmdgui(mainPanel);
-    //Cmd2 = new cmdgui(mainPanel);
-    //Cmd3 = new cmdgui(mainPanel);
-    //Cmd4 = new cmdgui(mainPanel);
-    //Cmd5 = new cmdgui(mainPanel);
-    //Cmd6 = new cmdgui(mainPanel);
-    //Cmd7 = new cmdgui(mainPanel);
-    //Cmd8 = new cmdgui(mainPanel);
-    //Cmd9 = new cmdgui(mainPanel);
-    //Cmd10 = new cmdgui(mainPanel);
-    //Cmd11 = new cmdgui(mainPanel);
-
     for (int i = 0; i < nrOfCMDs; i++) {
         arrayOfGuiCMDs[i] = new cmdgui(mainPanel, i);
         arrayOfGuiCMDs[i]->setCounters(wxString::Format("counters of CMD: %d", i+1));
@@ -98,61 +85,9 @@ MainWindow::MainWindow()
         cmdsSizer->Add(arrayOfGuiCMDs_sz[i], 1, wxEXPAND | wxALL, 1);
     }
     
-    //Cmd1 = new cmdgui(mainPanel, 0);
-    //Cmd2 = new cmdgui(mainPanel, 1);
-    //Cmd3 = new cmdgui(mainPanel, 2);
-    //Cmd4 = new cmdgui(mainPanel, 3);
-    //Cmd5 = new cmdgui(mainPanel, 4);
-    //Cmd6 = new cmdgui(mainPanel, 5);
-    //Cmd7 = new cmdgui(mainPanel, 6);
-    //Cmd8 = new cmdgui(mainPanel, 7);
-    //Cmd9 = new cmdgui(mainPanel, 8);
-    //Cmd10 = new cmdgui(mainPanel, 9);
-    //Cmd11 = new cmdgui(mainPanel, 10);
-
-    //Cmd1->setCounters("CMD counters 1");
-    //Cmd2->setCounters("CMD counters 2");
-    //Cmd3->setCounters("CMD counters 3");
-    //Cmd4->setCounters("CMD counters 4");
-    //Cmd5->setCounters("CMD counters 5");
-    //Cmd6->setCounters("CMD counters 6");
-    //Cmd7->setCounters("CMD counters 7");
-    //Cmd8->setCounters("CMD counters 8");
-    //Cmd9->setCounters("CMD counters 9");
-    //Cmd10->setCounters("CMD counters 10");
-    //Cmd11->setCounters("CMD counters 11");
-
-    //wxBoxSizer* cmd1_sz = Cmd1->getPointer();
-    //wxBoxSizer* cmd2_sz = Cmd2->getPointer();
-    //wxBoxSizer* cmd3_sz = Cmd3->getPointer();
-    //wxBoxSizer* cmd4_sz = Cmd4->getPointer();
-    //wxBoxSizer* cmd5_sz = Cmd5->getPointer();
-    //wxBoxSizer* cmd6_sz = Cmd6->getPointer();
-    //wxBoxSizer* cmd7_sz = Cmd7->getPointer();
-    //wxBoxSizer* cmd8_sz = Cmd8->getPointer();
-    //wxBoxSizer* cmd9_sz = Cmd9->getPointer();
-    //wxBoxSizer* cmd10_sz = Cmd10->getPointer();
-    //wxBoxSizer* cmd11_sz = Cmd11->getPointer();
-
-    //cmdsSizer->Add(cmd1_sz, 1, wxEXPAND | wxALL, 1);
-    //cmdsSizer->Add(cmd2_sz, 1, wxEXPAND | wxALL, 1);
-    //cmdsSizer->Add(cmd3_sz, 1, wxEXPAND | wxALL, 1);
-    //cmdsSizer->Add(cmd4_sz, 1, wxEXPAND | wxALL, 1);
-    //cmdsSizer->Add(cmd5_sz, 1, wxEXPAND | wxALL, 1);
-    //cmdsSizer->Add(cmd6_sz, 1, wxEXPAND | wxALL, 1);
-    //cmdsSizer->Add(cmd7_sz, 1, wxEXPAND | wxALL, 1);
-    //cmdsSizer->Add(cmd8_sz, 1, wxEXPAND | wxALL, 1);
-    //cmdsSizer->Add(cmd9_sz, 1, wxEXPAND | wxALL, 1);
-    //cmdsSizer->Add(cmd10_sz, 1, wxEXPAND | wxALL, 1);
-    //cmdsSizer->Add(cmd11_sz, 1, wxEXPAND | wxALL, 1);
-
     wxIcon _frame_icon(wxICON(MAINICON));
     SetIcon(_frame_icon);
 
-    //wxIcon icon("ALBSOLEL_ico_256x256.ico", wxBITMAP_TYPE_ICO);
-
-    // Set the icon for the frame
-    //SetIcon(icon);
     resultsSizer->Add(resultList, 1, wxEXPAND | wxALL, 1);
 
     componentsSizer->Add(runBT, 1, wxEXPAND | wxALL, 1);
@@ -165,7 +100,6 @@ MainWindow::MainWindow()
 
     SetSizer(mainSizer);
     mainPanel->Show(true);
-    //mainSizer->Add(mainPanel);
 }
 
 void MainWindow::OnExit(wxCommandEvent& event)
@@ -205,209 +139,6 @@ void MainWindow::OnCheckBoxEvent(wxCommandEvent& event)
         }
 
     }
-    /*
-
-    //if (event.GetId() == Cmd1->getCurrId()) {
-    //    if (Cmd1->Cmd_active_CB->GetValue()) {
-    //        Cmd1->enable();
-    //    }
-    //    else {
-    //        Cmd1->disable();
-    //    }
-    //}
-    //if (event.GetId() == Cmd1->getCurrId()+1) {
-    //    if (Cmd1->Cmd_sequential_CB->GetValue()) {
-    //        Cmd1->setSequential(true);
-    //    }
-    //    else {
-    //        Cmd1->setSequential(false);
-    //    }
-    //}
-    //
-
-    //if (event.GetId() == Cmd2->getCurrId()) {
-    //    if (Cmd2->Cmd_active_CB->GetValue()) {
-    //        Cmd2->enable();
-    //    }
-    //    else {
-    //        Cmd2->disable();
-    //    }
-    //}
-    //if (event.GetId() == Cmd2->getCurrId()+1) {
-    //    if (Cmd2->Cmd_sequential_CB->GetValue()) {
-    //        Cmd2->setSequential(true);
-    //    }
-    //    else {
-    //        Cmd2->setSequential(false);
-    //    }
-    //}
-
-
-    //if (event.GetId() == Cmd3->getCurrId()) {
-    //    if (Cmd3->Cmd_active_CB->GetValue()) {
-    //        Cmd3->enable();
-    //    }
-    //    else {
-    //        Cmd3->disable();
-    //    }
-    //}
-    //if (event.GetId() == Cmd3->getCurrId()+1) {
-    //    if (Cmd3->Cmd_sequential_CB->GetValue()) {
-    //        Cmd3->setSequential(true);
-    //    }
-    //    else {
-    //        Cmd3->setSequential(false);
-    //    }
-    //}
-
-
-    //if (event.GetId() == Cmd4->getCurrId()) {
-    //    if (Cmd4->Cmd_active_CB->GetValue()) {
-    //        Cmd4->enable();
-    //    }
-    //    else {
-    //        Cmd4->disable();
-    //    }
-    //}
-    //if (event.GetId() == Cmd4->getCurrId()+1) {
-    //    if (Cmd4->Cmd_sequential_CB->GetValue()) {
-    //        Cmd4->setSequential(true);
-    //    }
-    //    else {
-    //        Cmd4->setSequential(false);
-    //    }
-    //}
-
-
-    //if (event.GetId() == Cmd5->getCurrId()) {
-    //    if (Cmd5->Cmd_active_CB->GetValue()) {
-    //        Cmd5->enable();
-    //    }
-    //    else {
-    //        Cmd5->disable();
-    //    }
-    //}
-    //if (event.GetId() == Cmd5->getCurrId()+1) {
-    //    if (Cmd5->Cmd_sequential_CB->GetValue()) {
-    //        Cmd5->setSequential(true);
-    //    }
-    //    else {
-    //        Cmd5->setSequential(false);
-    //    }
-    //}
-
-
-    //if (event.GetId() == Cmd6->getCurrId()) {
-    //    if (Cmd6->Cmd_active_CB->GetValue()) {
-    //        Cmd6->enable();
-    //    }
-    //    else {
-    //        Cmd6->disable();
-    //    }
-    //}
-    //if (event.GetId() == Cmd6->getCurrId()+1) {
-    //    if (Cmd6->Cmd_sequential_CB->GetValue()) {
-    //        Cmd6->setSequential(true);
-    //    }
-    //    else {
-    //        Cmd6->setSequential(false);
-    //    }
-    //}
-
-
-
-    //if (event.GetId() == Cmd7->getCurrId()) {
-    //    if (Cmd7->Cmd_active_CB->GetValue()) {
-    //        Cmd7->enable();
-    //    }
-    //    else {
-    //        Cmd7->disable();
-    //    }
-    //}
-    //if (event.GetId() == Cmd7->getCurrId()+1) {
-    //    if (Cmd7->Cmd_sequential_CB->GetValue()) {
-    //        Cmd7->setSequential(true);
-    //    }
-    //    else {
-    //        Cmd7->setSequential(false);
-    //    }
-    //}
-
-
-
-    //if (event.GetId() == Cmd8->getCurrId()) {
-    //    if (Cmd8->Cmd_active_CB->GetValue()) {
-    //        Cmd8->enable();
-    //    }
-    //    else {
-    //        Cmd8->disable();
-    //    }
-    //}
-    //if (event.GetId() == Cmd8->getCurrId()+1) {
-    //    if (Cmd8->Cmd_sequential_CB->GetValue()) {
-    //        Cmd8->setSequential(true);
-    //    }
-    //    else {
-    //        Cmd8->setSequential(false);
-    //    }
-    //}
-
-
-
-    //if (event.GetId() == Cmd9->getCurrId()) {
-    //    if (Cmd9->Cmd_active_CB->GetValue()) {
-    //        Cmd9->enable();
-    //    }
-    //    else {
-    //        Cmd9->disable();
-    //    }
-    //}
-    //if (event.GetId() == Cmd9->getCurrId()+1) {
-    //    if (Cmd9->Cmd_sequential_CB->GetValue()) {
-    //        Cmd9->setSequential(true);
-    //    }
-    //    else {
-    //        Cmd9->setSequential(false);
-    //    }
-    //}
-
-
-
-    //if (event.GetId() == Cmd10->getCurrId()) {
-    //    if (Cmd10->Cmd_active_CB->GetValue()) {
-    //        Cmd10->enable();
-    //    }
-    //    else {
-    //        Cmd10->disable();
-    //    }
-    //}
-    //if (event.GetId() == Cmd10->getCurrId()+1) {
-    //    if (Cmd10->Cmd_sequential_CB->GetValue()) {
-    //        Cmd10->setSequential(true);
-    //    }
-    //    else {
-    //        Cmd10->setSequential(false);
-    //    }
-    //}
-
-
-    //if (event.GetId() == Cmd11->getCurrId()) {
-    //    if (Cmd11->Cmd_active_CB->GetValue()) {
-    //        Cmd11->enable();
-    //    }
-    //    else {
-    //        Cmd11->disable();
-    //    }
-    //}
-    //if (event.GetId() == Cmd11->getCurrId()+1) {
-    //    if (Cmd11->Cmd_sequential_CB->GetValue()) {
-    //        Cmd11->setSequential(true);
-    //    }
-    //    else {
-    //        Cmd11->setSequential(false);
-    //    }
-    //}
-    */
 }
 
 void MainWindow::OnAbout(wxCommandEvent& event)
@@ -435,17 +166,6 @@ void MainWindow::EnableCmds()
         arrayOfGuiCMDs[i]->enableEditables();
     }
 
-    //Cmd1->enableEditables();
-    //Cmd2->enableEditables();
-    //Cmd3->enableEditables();
-    //Cmd4->enableEditables();
-    //Cmd5->enableEditables();
-    //Cmd6->enableEditables();
-    //Cmd7->enableEditables();
-    //Cmd8->enableEditables();
-    //Cmd9->enableEditables();
-    //Cmd10->enableEditables();
-    //Cmd11->enableEditables();
 }
 
 
@@ -460,17 +180,6 @@ void MainWindow::DisableCmds()
         arrayOfGuiCMDs[i]->disableEditables();
     }
 
-    //Cmd1->disableEditables();
-    //Cmd2->disableEditables();
-    //Cmd3->disableEditables();
-    //Cmd4->disableEditables();
-    //Cmd5->disableEditables();
-    //Cmd6->disableEditables();
-    //Cmd7->disableEditables();
-    //Cmd8->disableEditables();
-    //Cmd9->disableEditables();
-    //Cmd10->disableEditables();
-    //Cmd11->disableEditables();
 }
 
 //Catching Ctrl+A and Ctrl+C for select all or copy 
@@ -664,247 +373,11 @@ void MainWindow::onRunCommand(wxCommandEvent& event)
             }
         }
     }
-    /*
-        if (!Cmd1->getRunning()) {
-            if (Cmd1->isActive()) {
-                if (Cmd1->setRunning(true)) {
-                    if (Cmd1->isSequential()) {
-                        StartThread(Cmd1->getCmd(), 1, true);
-                    }
-                    else {
-                        StartThread(Cmd1->getCmd(), 1, false);
-                    }
-                }
-                else {
-                    AddMessage(get_current_timestamp(), wxString::Format("Couldn't set the CMD 1 gui to BUSY"));
-                }
-            }
-        }
-        else {
-            AddMessage(get_current_timestamp(), wxString::Format("Thread for CMD 1 already active"));
-        }
-        wxYield();
-
-        if (!Cmd2->getRunning()) {
-            if (Cmd2->isActive()) {
-                if (Cmd2->setRunning(true)) {
-                    if (Cmd2->isSequential()) {
-                        StartThread(Cmd2->getCmd(), 2, true);
-                    }
-                    else {
-                        StartThread(Cmd2->getCmd(), 2, false);
-                    }
-                }
-                else {
-                    AddMessage(get_current_timestamp(), wxString::Format("Couldn't set the CMD 2 gui to BUSY"));
-                }
-            }
-        }
-        else {
-            AddMessage(get_current_timestamp(), wxString::Format("Thread for CMD 2 already active"));
-        }
-        wxYield();
-
-        if (!Cmd3->getRunning()) {
-            if (Cmd3->isActive()) {
-                if (Cmd3->setRunning(true)) {
-                    if (Cmd3->isSequential()) {
-                        StartThread(Cmd3->getCmd(), 3, true);
-                    }
-                    else {
-                        StartThread(Cmd3->getCmd(), 3, false);
-                    }
-                }
-                else {
-                    AddMessage(get_current_timestamp(), wxString::Format("Couldn't set the CMD 3 gui to BUSY"));
-                }
-            }
-        }
-        else {
-            AddMessage(get_current_timestamp(), wxString::Format("Thread for CMD 3 already active"));
-        }
-        wxYield();
-
-        if (!Cmd4->getRunning()) {
-            if (Cmd4->isActive()) {
-                if (Cmd4->setRunning(true)) {
-                    if (Cmd4->isSequential()) {
-                        StartThread(Cmd4->getCmd(), 4, true);
-                    }
-                    else {
-                        StartThread(Cmd4->getCmd(), 4, false);
-                    }
-                }
-                else {
-                    AddMessage(get_current_timestamp(), wxString::Format("Couldn't set the CMD 4 gui to BUSY"));
-                }
-            }
-        }
-        else {
-            AddMessage(get_current_timestamp(), wxString::Format("Thread for CMD 4 already active"));
-        }
-        wxYield();
-
-        if (!Cmd5->getRunning()) {
-            if (Cmd5->isActive()) {
-                if (Cmd5->setRunning(true)) {
-                    if (Cmd5->isSequential()) {
-                        StartThread(Cmd5->getCmd(), 5, true);
-                    }
-                    else {
-                        StartThread(Cmd5->getCmd(), 5, false);
-                    }
-                }
-                else {
-                    AddMessage(get_current_timestamp(), wxString::Format("Couldn't set the CMD 5 gui to BUSY"));
-                }
-            }
-        }
-        else {
-            AddMessage(get_current_timestamp(), wxString::Format("Thread for CMD 5 already active"));
-        }
-        wxYield();
-
-        if (!Cmd6->getRunning()) {
-            if (Cmd6->isActive()) {
-                if (Cmd6->setRunning(true)) {
-                    if (Cmd6->isSequential()) {
-                        StartThread(Cmd6->getCmd(), 6, true);
-                    }
-                    else {
-                        StartThread(Cmd6->getCmd(), 6, false);
-                    }
-                }
-                else {
-                    AddMessage(get_current_timestamp(), wxString::Format("Couldn't set the CMD 6 gui to BUSY"));
-                }
-            }
-        }
-        else {
-            AddMessage(get_current_timestamp(), wxString::Format("Thread for CMD 6 already active"));
-        }
-        wxYield();
-
-        if (!Cmd7->getRunning()) {
-            if (Cmd7->isActive()) {
-                if (Cmd7->setRunning(true)) {
-                    if (Cmd7->isSequential()) {
-                        StartThread(Cmd7->getCmd(), 7, true);
-                    }
-                    else {
-                        StartThread(Cmd7->getCmd(), 7, false);
-                    }
-                }
-                else {
-                    AddMessage(get_current_timestamp(), wxString::Format("Couldn't set the CMD 7 gui to BUSY"));
-                }
-            }
-        }
-        else {
-            AddMessage(get_current_timestamp(), wxString::Format("Thread for CMD 7 already active"));
-        }
-        wxYield();
-
-        if (!Cmd8->getRunning()) {
-            if (Cmd8->isActive()) {
-                if (Cmd8->setRunning(true)) {
-                    if (Cmd8->isSequential()) {
-                        StartThread(Cmd8->getCmd(), 8, true);
-                    }
-                    else {
-                        StartThread(Cmd8->getCmd(), 8, false);
-                    }
-                }
-                else {
-                    AddMessage(get_current_timestamp(), wxString::Format("Couldn't set the CMD 8 gui to BUSY"));
-                }
-            }
-        }
-        else {
-            AddMessage(get_current_timestamp(), wxString::Format("Thread for CMD 8 already active"));
-        }
-        wxYield();
-
-        if (!Cmd9->getRunning()) {
-            if (Cmd9->isActive()) {
-                if (Cmd9->setRunning(true)) {
-                    if (Cmd9->isSequential()) {
-                        StartThread(Cmd9->getCmd(), 9, true);
-                    }
-                    else {
-                        StartThread(Cmd9->getCmd(), 9, false);
-                    }
-                }
-                else {
-                    AddMessage(get_current_timestamp(), wxString::Format("Couldn't set the CMD 9 gui to BUSY"));
-                }
-            }
-        }
-        else {
-            AddMessage(get_current_timestamp(), wxString::Format("Thread for CMD 9 already active"));
-        }
-        wxYield();
-
-        if (!Cmd10->getRunning()) {
-            if (Cmd10->isActive()) {
-                if (Cmd10->setRunning(true)) {
-                    if (Cmd10->isSequential()) {
-                        StartThread(Cmd10->getCmd(), 10, true);
-                    }
-                    else {
-                        StartThread(Cmd10->getCmd(), 10, false);
-                    }
-                }
-                else {
-                    AddMessage(get_current_timestamp(), wxString::Format("Couldn't set the CMD 10 gui to BUSY"));
-                }
-            }
-        }
-        else {
-            AddMessage(get_current_timestamp(), wxString::Format("Thread for CMD 10 already active"));
-        }
-        wxYield();
-
-        if (!Cmd11->getRunning()) {
-            if (Cmd11->isActive()) {
-                if (Cmd11->setRunning(true)) {
-                    if (Cmd11->isSequential()) {
-                        StartThread(Cmd11->getCmd(), 11, true);
-                    }
-                    else {
-                        StartThread(Cmd11->getCmd(), 11, false);
-                    }
-                }
-                else {
-                    AddMessage(get_current_timestamp(), wxString::Format("Couldn't set the CMD 11 gui to BUSY"));
-                }
-            }
-        }
-        else {
-            AddMessage(get_current_timestamp(), wxString::Format("Thread for CMD 11 already active"));
-        }
-        wxYield();
-    }
-    */
 }
 
 void MainWindow::StartThread(const wxString& input, int CommandIndex, bool sequentialStatus) {
     // Start a background thread
-    /* Changed to no blocking and cycling into a while not finished loop with wxYield() inside (check calling function)
-    if (sequentialStatus != SEQUENTIAL) {
-        std::thread([this, input, CommandIndex]() {
-            std::string result = RunCommand(input.ToStdString());
-
-            wxYield();
-            // Create and post an event to the main thread
-            wxCommandEvent event(wxEVT_THREAD_RESULT);
-            event.SetString(result);
-            event.SetInt(CommandIndex);
-            wxQueueEvent(this, event.Clone());
-            }).detach();  // Detach so the thread runs independently
-    }else{
-    */
-    std::thread([this, input, CommandIndex]() {
+    std::thread([this, input, &CommandIndex]() {
         std::string result = RunCommand(input.ToStdString(), CommandIndex);
 
         wxYield();
@@ -923,7 +396,7 @@ void MainWindow::StartThread(const wxString& input, int CommandIndex, bool seque
 
 
 // Function to run the command and capture output
-std::string MainWindow::RunCommand(const std::string& command, int commandIndex) {
+std::string MainWindow::RunCommand(const std::string& command, int& commandIndex) {
 
     // Create pipes for capturing output
     HANDLE hRead, hWrite;
@@ -968,12 +441,17 @@ std::string MainWindow::RunCommand(const std::string& command, int commandIndex)
 
     // Read the command output
     std::string result;
-    char buffer[512];
+    char buffer[0xBFFFF];
     DWORD bytesRead;
 
     while (ReadFile(hRead, buffer, sizeof(buffer) - 1, &bytesRead, NULL) && bytesRead > 0) {
-        wxYield();
-        buffer[bytesRead] = '\0';
+        wxYield(); 
+        if (bytesRead >= sizeof(buffer)) {
+            buffer[sizeof(buffer) - 1] = '\0';  // Prevent overflow
+        }
+        else {
+            buffer[bytesRead] = '\0';  // Safe termination
+        }
         result += buffer;
     }
 
@@ -1003,6 +481,8 @@ void MainWindow::OnThreadResult(wxCommandEvent& event) {
             wxString countersTrack = wxString::Format("  P= %03d || F= %03d",
                 arrayOfPassed[i], arrayOfFailed[i]);
             arrayOfGuiCMDs[i]->setCounters(countersTrack);
+            ArrayOfresponses[i] = event.GetString();
+            wxLogMessage(ArrayOfresponses[i], "MessageReceived");
             arrayOfGuiCMDs[i]->setRunning(false);
             //Checking if there was an active blocking thread if yes then checking if the result came from the command who 
             //called the blocking thread, if yes than releasing the block
@@ -1013,151 +493,4 @@ void MainWindow::OnThreadResult(wxCommandEvent& event) {
             AddMessage(get_current_timestamp(), MessageToAdd);
         }
     }
-
-
-    /*
-    if (event.GetInt() == 1) {
-        if (event.GetString().Find(Cmd1->getPostiveVal()) != wxNOT_FOUND) {
-            passes_cmd1++;
-        }
-        else {
-            failed_cmd1++;
-        }
-        //AddMessage(get_current_timestamp(), event.GetString());
-        wxString countersTrack = wxString::Format("P = %03d  ||  F= %03d",
-            passes_cmd1, failed_cmd1);
-        Cmd1->setCounters(countersTrack);
-        Cmd1->setRunning(false);
-    }
-    if (event.GetInt() == 2) {
-        if (event.GetString().Find(Cmd2->getPostiveVal()) != wxNOT_FOUND) {
-            passes_cmd2++;
-        }
-        else {
-            failed_cmd2++;
-        }
-        //AddMessage(get_current_timestamp(), event.GetString());
-        wxString countersTrack = wxString::Format("P = %03d  ||  F= %03d",
-            passes_cmd2, failed_cmd2);
-        Cmd2->setCounters(countersTrack);
-        Cmd2->setRunning(false);
-    }
-    if (event.GetInt() == 3) {
-        if (event.GetString().Find(Cmd3->getPostiveVal()) != wxNOT_FOUND) {
-            passes_cmd3++;
-        }
-        else {
-            failed_cmd3++;
-        }
-        //AddMessage(get_current_timestamp(), event.GetString());
-        wxString countersTrack = wxString::Format("P = %03d  ||  F= %03d",
-            passes_cmd3, failed_cmd3);
-        Cmd3->setCounters(countersTrack);
-        Cmd3->setRunning(false);
-    }
-    if (event.GetInt() == 4) {
-        if (event.GetString().Find(Cmd4->getPostiveVal()) != wxNOT_FOUND) {
-            passes_cmd4++;
-        }
-        else {
-            failed_cmd4++;
-        }
-        //AddMessage(get_current_timestamp(), event.GetString());
-        wxString countersTrack = wxString::Format("P = %03d  ||  F= %03d",
-            passes_cmd4, failed_cmd4);
-        Cmd4->setCounters(countersTrack);
-        Cmd4->setRunning(false);
-    }
-    if (event.GetInt() == 5) {
-        if (event.GetString().Find(Cmd5->getPostiveVal()) != wxNOT_FOUND) {
-            passes_cmd5++;
-        }
-        else {
-            failed_cmd5++;
-        }
-        //AddMessage(get_current_timestamp(), event.GetString());
-        wxString countersTrack = wxString::Format("P = %03d  ||  F= %03d",
-            passes_cmd5, failed_cmd5);
-        Cmd5->setCounters(countersTrack);
-        Cmd5->setRunning(false);
-    }
-    if (event.GetInt() == 6) {
-        if (event.GetString().Find(Cmd6->getPostiveVal()) != wxNOT_FOUND) {
-            passes_cmd6++;
-        }
-        else {
-            failed_cmd6++;
-        }
-        //AddMessage(get_current_timestamp(), event.GetString());
-        wxString countersTrack = wxString::Format("P = %03d  ||  F= %03d",
-            passes_cmd6, failed_cmd6);
-        Cmd6->setCounters(countersTrack);
-        Cmd6->setRunning(false);
-    }
-    if (event.GetInt() == 7) {
-        if (event.GetString().Find(Cmd7->getPostiveVal()) != wxNOT_FOUND) {
-            passes_cmd7++;
-        }
-        else {
-            failed_cmd7++;
-        }
-        //AddMessage(get_current_timestamp(), event.GetString());
-        wxString countersTrack = wxString::Format("P = %03d  ||  F= %03d",
-            passes_cmd7, failed_cmd7);
-        Cmd7->setCounters(countersTrack);
-        Cmd7->setRunning(false);
-    }
-    if (event.GetInt() == 8) {
-        if (event.GetString().Find(Cmd8->getPostiveVal()) != wxNOT_FOUND) {
-            passes_cmd8++;
-        }
-        else {
-            failed_cmd8++;
-        }
-        //AddMessage(get_current_timestamp(), event.GetString());
-        wxString countersTrack = wxString::Format("P = %03d  ||  F= %03d",
-            passes_cmd8, failed_cmd8);
-        Cmd8->setCounters(countersTrack);
-        Cmd8->setRunning(false);
-    }
-    if (event.GetInt() == 9) {
-        if (event.GetString().Find(Cmd9->getPostiveVal()) != wxNOT_FOUND) {
-            passes_cmd9++;
-        }
-        else {
-            failed_cmd9++;
-        }
-        //AddMessage(get_current_timestamp(), event.GetString());
-        wxString countersTrack = wxString::Format("P = %03d  ||  F= %03d",
-            passes_cmd9, failed_cmd9);
-        Cmd9->setCounters(countersTrack);
-        Cmd9->setRunning(false);
-    }
-    if (event.GetInt() == 10) {
-        if (event.GetString().Find(Cmd10->getPostiveVal()) != wxNOT_FOUND) {
-            passes_cmd10++;
-        }
-        else {
-            failed_cmd10++;
-        }
-        //AddMessage(get_current_timestamp(), event.GetString());
-        wxString countersTrack = wxString::Format("P = %03d  ||  F= %03d",
-            passes_cmd10, failed_cmd10);
-        Cmd10->setCounters(countersTrack);
-        Cmd10->setRunning(false);
-    }
-    if (event.GetInt() == 11) {
-        if (event.GetString().Find(Cmd11->getPostiveVal()) != wxNOT_FOUND) {
-            passes_cmd11++;
-        }
-        else {
-            failed_cmd11++;
-        }
-        //AddMessage(get_current_timestamp(), event.GetString());
-        wxString countersTrack = wxString::Format("P = %03d  ||  F= %03d",
-            passes_cmd11, failed_cmd11);
-        Cmd11->setCounters(countersTrack);
-        Cmd11->setRunning(false);
-    }
-    */
 }

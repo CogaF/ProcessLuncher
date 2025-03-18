@@ -21,6 +21,7 @@
 #include <cmdgui.h>
 #include <wx/clipbrd.h>
 #include "../resource.h"
+#include <fstream>
 
 #define SEQUENTIAL true
 #define MaxNrOfCMDs 25
@@ -38,17 +39,6 @@ public:
     wxBoxSizer*     arrayOfGuiCMDs_sz[MaxNrOfCMDs];
     int             arrayOfPassed[MaxNrOfCMDs];
     int             arrayOfFailed[MaxNrOfCMDs];
-    //cmdgui*         Cmd1;
-    //cmdgui*         Cmd2;
-    //cmdgui*         Cmd3;
-    //cmdgui*         Cmd4;
-    //cmdgui*         Cmd5;
-    //cmdgui*         Cmd6;
-    //cmdgui*         Cmd7;
-    //cmdgui*         Cmd8;
-    //cmdgui*         Cmd9;
-    //cmdgui*         Cmd10;
-    //cmdgui*         Cmd11;
     //Main Sizer that will contain all components
     wxBoxSizer* mainSizer;
     wxBoxSizer* componentsSizer;
@@ -60,36 +50,7 @@ public:
     wxButton*       runBT;
     //The list (immagine this saying with the voice of John Rese in POI on espisode 1 of season 1 when he understands what Finch means, although this has nothing to do with that list)
     wxListCtrl*     resultList;
-    //Tracking number of passes and fails for each command
-    int passes_cmd1 = 0;
-    int failed_cmd1 = 0;
-    int passes_cmd2 = 0;
-    int failed_cmd2 = 0;
-    int passes_cmd3 = 0;
-    int failed_cmd3 = 0;
-    int passes_cmd4 = 0;
-    int failed_cmd4 = 0;
-    int passes_cmd5 = 0;
-    int failed_cmd5 = 0;
-    int passes_cmd6 = 0;
-    int failed_cmd6 = 0;
-    int passes_cmd7 = 0;
-    int failed_cmd7 = 0;
-    int passes_cmd8 = 0;
-    int failed_cmd8 = 0;
-    int passes_cmd9 = 0;
-    int failed_cmd9 = 0;
-    int passes_cmd10 = 0;
-    int failed_cmd10 = 0;
-    int passes_cmd11 = 0;
-    int failed_cmd11 = 0;
-    //Value that will be used to keep track of threads that have finished their task
-    //in order to prevend running newthread while previous ones aren't finished yet
-    int finishedThreads = 0;
-    int PassedFromMaster = 0;
-    int PassedFromSlave = 0;
-    int FailedFromMaster = 0;
-    int FailedFromSlave = 0;
+    wxString ArrayOfresponses[MaxNrOfCMDs];
     
 private:
 
@@ -100,7 +61,7 @@ private:
     void onRunCommand(wxCommandEvent& event);
     void AddMessage(const wxString& timestamp, const wxString& message);
     wxString get_current_timestamp();
-    std::string RunCommand(const std::string& command, int commandIndex);
+    std::string RunCommand(const std::string& command, int& commandIndex);
     void StartThread(const wxString& input, int commandIndex, bool sequentialStatus);
     void OnThreadResult(wxCommandEvent& event); 
     void OnKeyDown(wxKeyEvent& event);
