@@ -20,26 +20,35 @@
 #include <memory>
 #include <cmdgui.h>
 #include <wx/clipbrd.h>
+#include "../resource.h"
 
 #define SEQUENTIAL true
+#define MaxNrOfCMDs 25
 
 class MainWindow : public wxFrame
 {
 public:
     MainWindow();
-    bool stopAtSequential = false;
+    int             nrOfCMDs = 11;
+    bool            stopAtSequential = false;
+    bool            blockingThread = false;
+    int             blockingCommandIndex = -1;
     wxPanel*        mainPanel;
-    cmdgui*         Cmd1;
-    cmdgui*         Cmd2;
-    cmdgui*         Cmd3;
-    cmdgui*         Cmd4;
-    cmdgui*         Cmd5;
-    cmdgui*         Cmd6;
-    cmdgui*         Cmd7;
-    cmdgui*         Cmd8;
-    cmdgui*         Cmd9;
-    cmdgui*         Cmd10;
-    cmdgui*         Cmd11;
+    cmdgui*         arrayOfGuiCMDs[MaxNrOfCMDs];
+    wxBoxSizer*     arrayOfGuiCMDs_sz[MaxNrOfCMDs];
+    int             arrayOfPassed[MaxNrOfCMDs];
+    int             arrayOfFailed[MaxNrOfCMDs];
+    //cmdgui*         Cmd1;
+    //cmdgui*         Cmd2;
+    //cmdgui*         Cmd3;
+    //cmdgui*         Cmd4;
+    //cmdgui*         Cmd5;
+    //cmdgui*         Cmd6;
+    //cmdgui*         Cmd7;
+    //cmdgui*         Cmd8;
+    //cmdgui*         Cmd9;
+    //cmdgui*         Cmd10;
+    //cmdgui*         Cmd11;
     //Main Sizer that will contain all components
     wxBoxSizer* mainSizer;
     wxBoxSizer* componentsSizer;
@@ -91,7 +100,7 @@ private:
     void onRunCommand(wxCommandEvent& event);
     void AddMessage(const wxString& timestamp, const wxString& message);
     wxString get_current_timestamp();
-    std::string RunCommand(const std::string& command);
+    std::string RunCommand(const std::string& command, int commandIndex);
     void StartThread(const wxString& input, int commandIndex, bool sequentialStatus);
     void OnThreadResult(wxCommandEvent& event); 
     void OnKeyDown(wxKeyEvent& event);
@@ -103,6 +112,7 @@ private:
     void OnCheckBoxEvent(wxCommandEvent& event);
     void EnableCmds();
     void DisableCmds();
+    void OnClose(wxCloseEvent& event);
 };
 
 wxDEFINE_EVENT(wxEVT_THREAD_RESULT, wxCommandEvent);

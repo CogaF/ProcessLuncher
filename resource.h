@@ -2,7 +2,7 @@
 // Microsoft Visual C++ generated include file.
 // Used by ProcessLuncher.rc
 //
-#define AA_ICON                       102
+//#define MAINICON                       101
 
 // Next default values for new objects
 // 

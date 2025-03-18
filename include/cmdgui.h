@@ -25,10 +25,20 @@ private:
 	int _indexOfGui = 0;
 	bool _guiExists = false;
 	bool _isRunning = false;
+	bool _isViewShow = false;
+	bool _isPass = false;
 
 public:
+
+	int SEQUENTIAL_ID_INDEX = 1;
+	int TEXT_ID_INDEX = 2;
+	int RES_ID_INDEX = 3;
+	int COUNTERS_ID_INDEX = 4;
+	int VIEW_ID_INDEX = 5;
+
 	wxCheckBox* Cmd_active_CB;
 	wxCheckBox* Cmd_sequential_CB;
+	wxCheckBox* Cmd_view_CB;
 	cmdgui(wxPanel* parentPanel);
 	cmdgui(wxPanel* parentPanel, int guiIndex);
 	cmdgui(wxPanel* parentPanel, int guiIndex, bool isActive, bool sequential, wxString cmdName, wxString positiveValue, wxString counters_s);
@@ -41,6 +51,8 @@ public:
 	void buildDefault(int indexOfGuid);
 	bool setSequential(bool sequentialStatus);
 	bool setActive(bool activeStatus);
+	bool setView(bool activeStatus);
+	bool getView();
 	bool setCmd(wxString cmdName);
 	bool setPostVal(wxString positiveValue);
 	bool setCurrIds(int currId);
@@ -52,6 +64,8 @@ public:
 	void enable();
 	void disableEditables();
 	void enableEditables();
+	void setResult(bool result);
+	bool getResukt();
 	wxBoxSizer* getPointer();
 };
 

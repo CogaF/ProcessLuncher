@@ -10,13 +10,15 @@ cmdgui::cmdgui(wxPanel* parentPanel) {
 	if (!_guiExists) {
 		Cmd_sz = new wxBoxSizer(wxHORIZONTAL);
 		Cmd_active_CB = new wxCheckBox(parentPanel, wxID_ANY, "");
-		Cmd_sequential_CB = new wxCheckBox(parentPanel, wxID_ANY, "");
 		Cmd_txt = new wxTextCtrl(parentPanel, wxID_ANY, "");
 		Cmd_res = new wxTextCtrl(parentPanel, wxID_ANY, "");
+		Cmd_counters = new wxStaticText(parentPanel, wxID_ANY, "");
+		Cmd_sequential_CB = new wxCheckBox(parentPanel, wxID_ANY, "");
+		Cmd_view_CB = new wxCheckBox(parentPanel, wxID_ANY, "");
+		Cmd_view_CB->Disable();
 		Cmd_running_CB = new wxCheckBox(parentPanel, wxID_ANY, "");
 		Cmd_running_CB->Disable();
 		Cmd_running_CB->SetValue(false);
-		Cmd_counters = new wxStaticText(parentPanel, wxID_ANY, "");
 	}
 	buildDefault(0);
 }
@@ -24,18 +26,28 @@ cmdgui::cmdgui(wxPanel* parentPanel) {
 cmdgui::cmdgui(wxPanel* parentPanel, int guiIndex) {
 	if (!_guiExists) {
 		Cmd_sz = new wxBoxSizer(wxHORIZONTAL);
-		Cmd_active_CB = new wxCheckBox(parentPanel, wxID_ANY,"");
-		Cmd_sequential_CB = new wxCheckBox(parentPanel, wxID_ANY, "");
+		Cmd_active_CB = new wxCheckBox(parentPanel, wxID_ANY, "");
 		Cmd_txt = new wxTextCtrl(parentPanel, wxID_ANY, "");
 		Cmd_res = new wxTextCtrl(parentPanel, wxID_ANY, "");
+		Cmd_counters = new wxStaticText(parentPanel, wxID_ANY, "");
+		Cmd_sequential_CB = new wxCheckBox(parentPanel, wxID_ANY, "");
+		Cmd_view_CB = new wxCheckBox(parentPanel, wxID_ANY, "");
+		Cmd_view_CB->Disable();
 		Cmd_running_CB = new wxCheckBox(parentPanel, wxID_ANY, "");
 		Cmd_running_CB->Disable();
 		Cmd_running_CB->SetValue(false);
-		Cmd_counters = new wxStaticText(parentPanel,wxID_ANY,"");
 	}
 	//_thisId = guiIndex;
 	buildDefault(guiIndex);
 	//update();
+}
+
+
+void cmdgui::setResult(bool result) {
+	_isPass = result;
+}
+bool cmdgui::getResukt() {
+	return _isPass;
 }
 
 void cmdgui::disable() {
@@ -43,6 +55,7 @@ void cmdgui::disable() {
 	Cmd_txt->Disable();
 	Cmd_res->Disable();
 	Cmd_counters->Disable();
+	Cmd_view_CB->Disable();
 	setActive(false);
 }
 
@@ -51,6 +64,7 @@ void cmdgui::enable() {
 	Cmd_txt->Enable();
 	Cmd_res->Enable();
 	Cmd_counters->Enable();
+	//Cmd_view_CB->Enable();
 	setActive(true);
 }
 
@@ -58,6 +72,7 @@ void cmdgui::disableEditables() {
 	Cmd_sequential_CB->Disable();
 	Cmd_txt->Disable();
 	Cmd_res->Disable();
+	Cmd_view_CB->Disable();
 }
 
 void cmdgui::enableEditables() {
@@ -65,6 +80,7 @@ void cmdgui::enableEditables() {
 		Cmd_sequential_CB->Enable();
 		Cmd_txt->Enable();
 		Cmd_res->Enable();
+		//Cmd_view_CB->Enable();
 	}
 }
 
@@ -129,13 +145,15 @@ void cmdgui::buildDefault(int guiIndex) {
 
 	Cmd_active_CB->SetValue(true);
 	Cmd_active_CB->SetLabel("ON");
-	Cmd_sequential_CB->SetValue(false);
-	Cmd_sequential_CB->SetLabel("Parallel");
 	Cmd_txt->SetValue(_cmdName);
 	Cmd_res->SetValue(_positiveVal);
-	Cmd_running_CB->SetLabel("Ready");
-	Cmd_running_CB->SetValue(false);
 	Cmd_counters->SetLabel(_counters);
+	Cmd_sequential_CB->SetValue(false);
+	Cmd_sequential_CB->SetLabel("Parallel");
+	Cmd_view_CB->SetValue(false);
+	Cmd_view_CB->SetLabel("Hide ");
+	Cmd_running_CB->SetValue(false);
+	Cmd_running_CB->SetLabel("Ready");
 
 	if (!setCurrIds(guiIndex)) {
 		_guiExists = false;
@@ -143,11 +161,12 @@ void cmdgui::buildDefault(int guiIndex) {
 
 	if (!_guiExists) {
 		Cmd_sz->Add(Cmd_active_CB, 1, wxEXPAND | wxALL, 1);
+		Cmd_sz->Add(Cmd_txt, 5, wxEXPAND | wxALL, 1);
+		Cmd_sz->Add(Cmd_res, 3, wxEXPAND | wxALL, 1);
+		Cmd_sz->Add(Cmd_counters, 3, wxEXPAND | wxALL, 1);
 		Cmd_sz->Add(Cmd_sequential_CB, 1, wxEXPAND | wxALL, 1);
-		Cmd_sz->Add(Cmd_txt, 7, wxEXPAND | wxALL, 1);
-		Cmd_sz->Add(Cmd_res, 4, wxEXPAND | wxALL, 1);
+		Cmd_sz->Add(Cmd_view_CB, 1, wxEXPAND | wxALL, 1);
 		Cmd_sz->Add(Cmd_running_CB, 1, wxEXPAND | wxALL, 1);
-		Cmd_sz->Add(Cmd_counters, 2, wxEXPAND | wxALL, 1);
 	}
 	_guiExists = true;
 }
@@ -163,10 +182,10 @@ bool cmdgui::update() {
 	}
 	Cmd_sequential_CB->SetValue(_isSequential);
 	if (_isSequential) {
-		Cmd_sequential_CB->SetLabel("inParallel");
+		Cmd_sequential_CB->SetLabel("Single");
 	}
 	else {
-		Cmd_sequential_CB->SetLabel("Sequential");
+		Cmd_sequential_CB->SetLabel("Multip.");
 	}
 	Cmd_txt->SetValue(_cmdName);
 	Cmd_res->SetValue(_positiveVal);
@@ -179,6 +198,14 @@ bool cmdgui::update() {
 		Cmd_running_CB->SetLabel("Ready");
 	}
 
+	Cmd_active_CB->SetValue(_isViewShow);
+	if (_isViewShow) {
+		Cmd_view_CB->SetLabel("Show");
+	}
+	else {
+		Cmd_view_CB->SetLabel("Hide ");
+	}
+
 	Cmd_counters->SetLabel(_counters);
 	if (!setCurrIds(_thisId)) {
 		_guiExists = false;
@@ -186,11 +213,12 @@ bool cmdgui::update() {
 	}
 	if (!_guiExists) {
 		Cmd_sz->Add(Cmd_active_CB, 1, wxEXPAND | wxALL, 1);
-		Cmd_sz->Add(Cmd_sequential_CB, 1, wxEXPAND | wxALL, 1);
 		Cmd_sz->Add(Cmd_txt, 7, wxEXPAND | wxALL, 1);
 		Cmd_sz->Add(Cmd_res, 4, wxEXPAND | wxALL, 1);
-		Cmd_sz->Add(Cmd_running_CB, 1, wxEXPAND | wxALL, 1);
 		Cmd_sz->Add(Cmd_counters, 2, wxEXPAND | wxALL, 1);
+		Cmd_sz->Add(Cmd_sequential_CB, 1, wxEXPAND | wxALL, 1);
+		Cmd_sz->Add(Cmd_view_CB, 1, wxEXPAND | wxALL, 1);
+		Cmd_sz->Add(Cmd_running_CB, 1, wxEXPAND | wxALL, 1);
 	}
 	_guiExists = true;
 	return true;
@@ -245,6 +273,25 @@ bool cmdgui::setActive(bool activeStatus) {
 	return false;
 }
 
+bool cmdgui::getView() {
+	return _isViewShow;
+}
+
+bool cmdgui::setView(bool viewStatus) {
+	_isViewShow = viewStatus;
+	if (Cmd_view_CB != nullptr) {
+		Cmd_view_CB->SetValue(_isViewShow);
+		if (_isViewShow) {
+			Cmd_view_CB->SetLabel("Show");
+		}
+		else {
+			Cmd_view_CB->SetLabel("Hide ");
+		}
+		return true;
+	}
+	return false;
+}
+
 bool cmdgui::setCmd(wxString cmdName) {
 	_cmdName = cmdName;
 	if (Cmd_txt != nullptr) {
@@ -273,10 +320,11 @@ bool cmdgui::setCurrIds(int guiIndex) {
 		Cmd_counters != nullptr) {
 
 		Cmd_active_CB->SetId(_thisId );
-		Cmd_sequential_CB->SetId(_thisId + 1);
-		Cmd_txt->SetId(_thisId + 2);
-		Cmd_res->SetId(_thisId + 3);
-		Cmd_counters->SetId(_thisId + 4);
+		Cmd_sequential_CB->SetId(_thisId + SEQUENTIAL_ID_INDEX);
+		Cmd_txt->SetId(_thisId + TEXT_ID_INDEX);
+		Cmd_res->SetId(_thisId + RES_ID_INDEX);
+		Cmd_counters->SetId(_thisId + COUNTERS_ID_INDEX);
+		Cmd_view_CB->SetId(_thisId + VIEW_ID_INDEX);
 		return true;
 	}
 	return false;
