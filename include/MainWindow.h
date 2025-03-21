@@ -22,6 +22,14 @@
 #include <wx/clipbrd.h>
 #include "../resource.h"
 #include <fstream>
+#include <wx/filename.h> 
+#include <wx/filename.h> 
+#include <wx/stdpaths.h>
+#include <wx/valnum.h>
+#include <wx/textfile.h>
+#include <wx/wfstream.h>
+#include <wx/txtstrm.h>
+#include <wx/file.h>
 
 #define SEQUENTIAL true
 #define MaxNrOfCMDs 25
@@ -30,6 +38,8 @@ class MainWindow : public wxFrame
 {
 public:
     MainWindow();
+    wxString        searchOnFIle_s = ":File:";
+    wxString        separator = "::";
     int             nrOfCMDs = 11;
     bool            stopAtSequential = false;
     bool            blockingThread = false;
@@ -74,6 +84,9 @@ private:
     void EnableCmds();
     void DisableCmds();
     void OnClose(wxCloseEvent& event);
+    wxString extractFileName(wxString completeString);
+    wxString extractPositiveResult(wxString completeString);
+    bool FindInFile(const wxString& filePath, const wxString& searchString);
 };
 
 wxDEFINE_EVENT(wxEVT_THREAD_RESULT, wxCommandEvent);

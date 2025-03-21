@@ -469,28 +469,133 @@ std::string MainWindow::RunCommand(const std::string& command, int& commandIndex
 void MainWindow::OnThreadResult(wxCommandEvent& event) {
     for (int i = 0; i < nrOfCMDs; i++) {
         if (event.GetInt() == (i)) {
-            if (event.GetString().Find(arrayOfGuiCMDs[i]->getPostiveVal()) == wxNOT_FOUND) {
-                arrayOfFailed[i]++;
-                arrayOfGuiCMDs[i]->setResult(false);
+            if (arrayOfGuiCMDs[i]->getPostiveVal().Find(searchOnFIle_s) == wxNOT_FOUND) {
+                if (event.GetString().Find(arrayOfGuiCMDs[i]->getPostiveVal()) == wxNOT_FOUND) {
+                    arrayOfFailed[i]++;
+                    arrayOfGuiCMDs[i]->setResult(false);
+                }
+                else {
+                    arrayOfPassed[i]++;
+                    arrayOfGuiCMDs[i]->setResult(true);
+                }
+                //AddMessage(get_current_timestamp(), event.GetString());
+                wxString countersTrack = wxString::Format("  P= %03d || F= %03d",
+                    arrayOfPassed[i], arrayOfFailed[i]);
+                arrayOfGuiCMDs[i]->setCounters(countersTrack);
+                ArrayOfresponses[i] = event.GetString();
+                //wxLogMessage(ArrayOfresponses[i], "MessageReceived");
+                arrayOfGuiCMDs[i]->setRunning(false);
+                //Checking if there was an active blocking thread if yes then checking if the result came from the command who 
+                //called the blocking thread, if yes than releasing the block
+                if (blockingThread && (blockingCommandIndex == i)) {
+                    blockingThread = false;
+                }
+                wxString MessageToAdd = wxString::Format("Cmd %d result is: " + event.GetString(), event.GetInt() + 1);
+                AddMessage(get_current_timestamp(), MessageToAdd);
             }
             else {
-                arrayOfPassed[i]++;
-                arrayOfGuiCMDs[i]->setResult(true);
+                wxString fileNamePath = extractFileName(arrayOfGuiCMDs[i]->getPostiveVal());
+                wxFile mFile;
+                wxTextFile resultFile;
+                if (mFile.Exists(fileNamePath)) {
+
+                    wxString positiveResult = extractPositiveResult(arrayOfGuiCMDs[i]->getPostiveVal());
+                    if (FindInFile(fileNamePath, positiveResult)) {
+                        arrayOfPassed[i]++;
+                        arrayOfGuiCMDs[i]->setResult(true);
+                    }
+                    else {
+                        arrayOfFailed[i]++;
+                        arrayOfGuiCMDs[i]->setResult(false);
+                    }
+                    //AddMessage(get_current_timestamp(), event.GetString());
+                    wxString countersTrack = wxString::Format("  P= %03d || F= %03d",
+                        arrayOfPassed[i], arrayOfFailed[i]);
+                    arrayOfGuiCMDs[i]->setCounters(countersTrack);
+                    ArrayOfresponses[i] = event.GetString();
+                    //wxLogMessage(ArrayOfresponses[i], "MessageReceived");
+                    arrayOfGuiCMDs[i]->setRunning(false);
+                    //Checking if there was an active blocking thread if yes then checking if the result came from the command who 
+                    //called the blocking thread, if yes than releasing the block
+                    if (blockingThread && (blockingCommandIndex == i)) {
+                        blockingThread = false;
+                    }
+                    wxString MessageToAdd = wxString::Format("Cmd %d result is: " + event.GetString(), event.GetInt() + 1);
+                    AddMessage(get_current_timestamp(), MessageToAdd);
+                }
+                else {
+                    arrayOfFailed[i]++;
+                    arrayOfGuiCMDs[i]->setResult(false);
+                    //AddMessage(get_current_timestamp(), event.GetString());
+                    wxString countersTrack = wxString::Format("  P= %03d || F= %03d",
+                        arrayOfPassed[i], arrayOfFailed[i]);
+                    arrayOfGuiCMDs[i]->setCounters(countersTrack);
+                    ArrayOfresponses[i] = event.GetString();
+                    //wxLogMessage(ArrayOfresponses[i], "MessageReceived");
+                    arrayOfGuiCMDs[i]->setRunning(false);
+                    //Checking if there was an active blocking thread if yes then checking if the result came from the command who 
+                    //called the blocking thread, if yes than releasing the block
+                    if (blockingThread && (blockingCommandIndex == i)) {
+                        blockingThread = false;
+                    }
+                    AddMessage(get_current_timestamp(), wxString::Format("File " + fileNamePath + " doesn't exist"));
+                }
             }
-            //AddMessage(get_current_timestamp(), event.GetString());
-            wxString countersTrack = wxString::Format("  P= %03d || F= %03d",
-                arrayOfPassed[i], arrayOfFailed[i]);
-            arrayOfGuiCMDs[i]->setCounters(countersTrack);
-            ArrayOfresponses[i] = event.GetString();
-            wxLogMessage(ArrayOfresponses[i], "MessageReceived");
-            arrayOfGuiCMDs[i]->setRunning(false);
-            //Checking if there was an active blocking thread if yes then checking if the result came from the command who 
-            //called the blocking thread, if yes than releasing the block
-            if (blockingThread && (blockingCommandIndex == i)) {
-                blockingThread = false;
-            }
-            wxString MessageToAdd = wxString::Format("Cmd %d result is: " + event.GetString(), event.GetInt()+1);
-            AddMessage(get_current_timestamp(), MessageToAdd);
         }
     }
+}
+
+wxString MainWindow::extractFileName(wxString completeString) {
+    wxString toReturn = "";
+    int indexOfStartFilename = completeString.Find(searchOnFIle_s) + searchOnFIle_s.length();
+    int indexOfEndFileFilename = completeString.find_last_of(separator) + separator.length();
+    toReturn = completeString.SubString(indexOfStartFilename, indexOfEndFileFilename);
+    AddMessage(get_current_timestamp(), wxString::Format("Filename starts at index: \"%d\"", indexOfStartFilename));
+    AddMessage(get_current_timestamp(), wxString::Format("Filename ends at index: \"%d\"", indexOfEndFileFilename));
+    AddMessage(get_current_timestamp(), wxString::Format("Filename is: \"%s\"", toReturn));
+
+    return toReturn;
+}
+
+
+wxString MainWindow::extractPositiveResult(wxString completeString) {
+    wxString toReturn = "";
+
+    return toReturn;
+
+}
+
+bool MainWindow::FindInFile(const wxString& filePath, const wxString& searchString)
+{
+    bool toRetrun = false;
+    wxFileInputStream input(filePath);
+    if (!input.IsOk())
+    {
+        AddMessage(get_current_timestamp(), wxString::Format("Failed to open file \"%s\" @SearchLargeFile()", filePath));
+    }
+
+    wxTextInputStream text(input);
+    wxString line;
+    bool found = false;
+#ifdef _DEBUG
+    AddMessage(get_current_timestamp(), wxString::Format("START Search"));
+#endif
+    while (input.IsOk() && !input.Eof() && !found) // Read line by line
+    {
+        line = text.ReadLine();
+        if (line.Contains(searchString))
+        {
+#ifdef _DEBUG
+            AddMessage(get_current_timestamp(), wxString::Format("Found \"%s\" at file \"%s\" @FindInFile()", searchString, filePath));
+#endif
+            toRetrun = true;
+            found = true;
+        }
+        wxYield();
+    }
+#ifdef _DEBUG
+    AddMessage(get_current_timestamp(), wxString::Format("END Search"));
+#endif
+
+    return toRetrun;
 }
