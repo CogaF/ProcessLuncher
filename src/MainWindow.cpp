@@ -377,7 +377,7 @@ void MainWindow::onRunCommand(wxCommandEvent& event)
 
 void MainWindow::StartThread(const wxString& input, int CommandIndex, bool sequentialStatus) {
     // Start a background thread
-    std::thread([this, input, &CommandIndex]() {
+    std::thread([this, input, CommandIndex]() {
         std::string result = RunCommand(input.ToStdString(), CommandIndex);
 
         wxYield();
@@ -386,6 +386,7 @@ void MainWindow::StartThread(const wxString& input, int CommandIndex, bool seque
         event.SetString(result);
         event.SetInt(CommandIndex);
         wxQueueEvent(this, event.Clone());
+
         }).detach();  // Join to run it sequentially
     
     wxYield();
@@ -396,7 +397,7 @@ void MainWindow::StartThread(const wxString& input, int CommandIndex, bool seque
 
 
 // Function to run the command and capture output
-std::string MainWindow::RunCommand(const std::string& command, int& commandIndex) {
+std::string MainWindow::RunCommand(const std::string& command, int commandIndex) {
 
     // Create pipes for capturing output
     HANDLE hRead, hWrite;
@@ -468,7 +469,10 @@ std::string MainWindow::RunCommand(const std::string& command, int& commandIndex
 // Update UI when result is received
 void MainWindow::OnThreadResult(wxCommandEvent& event) {
     for (int i = 0; i < nrOfCMDs; i++) {
-        if (event.GetInt() == (i)) {
+        int eventId = event.GetId();
+        int eventInt = event.GetInt();
+        wxString eventString = event.GetString();
+        if (event.GetInt() == i) {
             if (arrayOfGuiCMDs[i]->getPostiveVal().Find(searchOnFIle_s) == wxNOT_FOUND) {
                 if (event.GetString().Find(arrayOfGuiCMDs[i]->getPostiveVal()) == wxNOT_FOUND) {
                     arrayOfFailed[i]++;
@@ -548,19 +552,16 @@ void MainWindow::OnThreadResult(wxCommandEvent& event) {
 wxString MainWindow::extractFileName(wxString completeString) {
     wxString toReturn = "";
     int indexOfStartFilename = completeString.Find(searchOnFIle_s) + searchOnFIle_s.length();
-    int indexOfEndFileFilename = completeString.find_last_of(separator) + separator.length();
+    int indexOfEndFileFilename = completeString.find_last_of(separator)-2;
     toReturn = completeString.SubString(indexOfStartFilename, indexOfEndFileFilename);
-    AddMessage(get_current_timestamp(), wxString::Format("Filename starts at index: \"%d\"", indexOfStartFilename));
-    AddMessage(get_current_timestamp(), wxString::Format("Filename ends at index: \"%d\"", indexOfEndFileFilename));
-    AddMessage(get_current_timestamp(), wxString::Format("Filename is: \"%s\"", toReturn));
-
     return toReturn;
 }
 
 
 wxString MainWindow::extractPositiveResult(wxString completeString) {
     wxString toReturn = "";
-
+    int indexOfEndOfSeparator = completeString.find_last_of(separator)+1;
+    toReturn = completeString.SubString(indexOfEndOfSeparator, completeString.length()-1);
     return toReturn;
 
 }

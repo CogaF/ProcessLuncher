@@ -17,7 +17,7 @@ private:
 	wxStaticText*	Cmd_counters;
 
 	wxString _cmdName = "ping google.com";
-	wxString _positiveVal = "result for positive evaluation";
+	wxString _positiveVal = ":File:C:\\temp\\result.txt::StringPASS_InFile";
 	wxString _counters = "";
 	bool _isActive = true;
 	bool _isSequential = false;
