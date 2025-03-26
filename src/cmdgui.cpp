@@ -9,6 +9,8 @@
 cmdgui::cmdgui(wxPanel* parentPanel) {
 	if (!_guiExists) {
 		Cmd_sz = new wxBoxSizer(wxHORIZONTAL);
+		Cmd_run_bt = new wxButton(parentPanel, wxID_ANY, "Run");
+		Cmd_run_bt->Enable();
 		Cmd_active_CB = new wxCheckBox(parentPanel, wxID_ANY, "");
 		Cmd_txt = new wxTextCtrl(parentPanel, wxID_ANY, "");
 		Cmd_res = new wxTextCtrl(parentPanel, wxID_ANY, "");
@@ -26,6 +28,8 @@ cmdgui::cmdgui(wxPanel* parentPanel) {
 cmdgui::cmdgui(wxPanel* parentPanel, int guiIndex) {
 	if (!_guiExists) {
 		Cmd_sz = new wxBoxSizer(wxHORIZONTAL);
+		Cmd_run_bt = new wxButton(parentPanel, wxID_ANY, "Run");
+		Cmd_run_bt->Enable();
 		Cmd_active_CB = new wxCheckBox(parentPanel, wxID_ANY, "");
 		Cmd_txt = new wxTextCtrl(parentPanel, wxID_ANY, "");
 		Cmd_res = new wxTextCtrl(parentPanel, wxID_ANY, "");
@@ -89,6 +93,8 @@ cmdgui::cmdgui(wxPanel* parentPanel, int currId, bool isActive, bool sequential,
 
 		Cmd_sz = new wxBoxSizer(wxHORIZONTAL);
 		Cmd_active_CB = new wxCheckBox(parentPanel, wxID_ANY, "");
+		Cmd_run_bt = new wxButton(parentPanel, wxID_ANY, "Run");
+		Cmd_run_bt->Enable();
 		Cmd_sequential_CB = new wxCheckBox(parentPanel, wxID_ANY, "");
 		Cmd_txt = new wxTextCtrl(parentPanel, wxID_ANY, "");
 		Cmd_res = new wxTextCtrl(parentPanel, wxID_ANY, "");
@@ -145,6 +151,7 @@ void cmdgui::buildDefault(int guiIndex) {
 
 	Cmd_active_CB->SetValue(true);
 	Cmd_active_CB->SetLabel("ON");
+	Cmd_run_bt->Enable();
 	Cmd_txt->SetValue(_cmdName);
 	Cmd_res->SetValue(_positiveVal);
 	Cmd_counters->SetLabel(_counters);
@@ -161,6 +168,7 @@ void cmdgui::buildDefault(int guiIndex) {
 
 	if (!_guiExists) {
 		Cmd_sz->Add(Cmd_active_CB, 1, wxEXPAND | wxALL, 1);
+		Cmd_sz->Add(Cmd_run_bt, 1, wxEXPAND | wxALL, 1);
 		Cmd_sz->Add(Cmd_txt, 5, wxEXPAND | wxALL, 1);
 		Cmd_sz->Add(Cmd_res, 3, wxEXPAND | wxALL, 1);
 		Cmd_sz->Add(Cmd_counters, 3, wxEXPAND | wxALL, 1);
@@ -193,9 +201,11 @@ bool cmdgui::update() {
 	Cmd_running_CB->SetValue(_isRunning);
 	if (_isRunning) {
 		Cmd_running_CB->SetLabel("Busy");
+		Cmd_run_bt->Disable();
 	}
 	else {
 		Cmd_running_CB->SetLabel("Ready");
+		Cmd_run_bt->Enable();
 	}
 
 	Cmd_active_CB->SetValue(_isViewShow);
@@ -213,6 +223,7 @@ bool cmdgui::update() {
 	}
 	if (!_guiExists) {
 		Cmd_sz->Add(Cmd_active_CB, 1, wxEXPAND | wxALL, 1);
+		Cmd_sz->Add(Cmd_run_bt, 1, wxEXPAND | wxALL, 1);
 		Cmd_sz->Add(Cmd_txt, 7, wxEXPAND | wxALL, 1);
 		Cmd_sz->Add(Cmd_res, 4, wxEXPAND | wxALL, 1);
 		Cmd_sz->Add(Cmd_counters, 2, wxEXPAND | wxALL, 1);
@@ -239,15 +250,17 @@ bool cmdgui::setSequential(bool sequentialStatus) {
 	return false;
 }
 
-bool cmdgui::setRunning(bool runninglStatus) {
-	_isRunning = runninglStatus;
+bool cmdgui::setRunning(bool runningStatus) {
+	_isRunning = runningStatus;
 	if (Cmd_running_CB != nullptr) {
 		Cmd_running_CB->SetValue(_isRunning);
 		if (_isRunning) {
 			Cmd_running_CB->SetLabel("Busy");
+			Cmd_run_bt->Disable();
 		}
 		else {
 			Cmd_running_CB->SetLabel("Ready");
+			Cmd_run_bt->Enable();
 		}
 		return true;
 	}
@@ -264,9 +277,11 @@ bool cmdgui::setActive(bool activeStatus) {
 		Cmd_active_CB->SetValue(_isActive);
 		if (_isActive) { 
 			Cmd_active_CB->SetLabel("ON");
+			Cmd_run_bt->Enable();
 		}
 		else {
 			Cmd_active_CB->SetLabel("OFF");
+			Cmd_run_bt->Disable();
 		}
 		return true;
 	}
@@ -321,6 +336,7 @@ bool cmdgui::setCurrIds(int guiIndex) {
 
 		Cmd_active_CB->SetId(_thisId );
 		Cmd_sequential_CB->SetId(_thisId + SEQUENTIAL_ID_INDEX);
+		Cmd_run_bt->SetId(_thisId + RUNBUTTON_ID_INDEX);
 		Cmd_txt->SetId(_thisId + TEXT_ID_INDEX);
 		Cmd_res->SetId(_thisId + RES_ID_INDEX);
 		Cmd_counters->SetId(_thisId + COUNTERS_ID_INDEX);

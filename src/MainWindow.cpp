@@ -48,8 +48,9 @@ MainWindow::MainWindow()
     Bind(wxEVT_MENU, &MainWindow::OnExit, this, wxID_EXIT);
     Bind(wxEVT_MENU, &MainWindow::OnEnable, this, windowIDs::ID_ENABLE_EDIT);
     Bind(wxEVT_MENU, &MainWindow::OnDisable, this, windowIDs::ID_DISABLE_EDIT);
-    Bind(wxEVT_BUTTON, &MainWindow::onRunCommand, this, windowIDs::ID_RUN_COMMAND_BT);
-    Bind(wxEVT_CHECKBOX, &MainWindow::OnCheckBoxEvent, this);
+    //Bind(wxEVT_BUTTON, &MainWindow::onRunCommand, this, windowIDs::ID_RUN_COMMAND_BT);
+    Bind(wxEVT_CHECKBOX, &MainWindow::OnGuiEvent, this);
+    Bind(wxEVT_BUTTON, &MainWindow::OnButtonEvent, this);
     Bind(wxEVT_THREAD_RESULT, &MainWindow::OnThreadResult, this);
     Bind(wxEVT_CLOSE_WINDOW, &MainWindow::OnClose, this);
     resultList->Bind(wxEVT_KEY_DOWN, &MainWindow::OnKeyDown, this);
@@ -108,9 +109,8 @@ void MainWindow::OnExit(wxCommandEvent& event)
 }
 
 
-void MainWindow::OnCheckBoxEvent(wxCommandEvent& event)
+void MainWindow::OnGuiEvent(wxCommandEvent& event)
 {
-
     for (int i = 0; i < nrOfCMDs; i++) {
 
         if (event.GetId() == arrayOfGuiCMDs[i]->getCurrId()) {
@@ -136,10 +136,46 @@ void MainWindow::OnCheckBoxEvent(wxCommandEvent& event)
                 arrayOfGuiCMDs[i]->setView(false);
             }
 
+        }else if (event.GetId() == (arrayOfGuiCMDs[i]->getCurrId() + arrayOfGuiCMDs[i]->RUNBUTTON_ID_INDEX)) {
+            if (!arrayOfGuiCMDs[i]->getRunning()) {
+                if (arrayOfGuiCMDs[i]->setRunning(true)) {
+                    StartThread(arrayOfGuiCMDs[i]->getCmd(), i, false);
+                }
+                else {
+                    AddMessage(get_current_timestamp(), wxString::Format("Couldn't set the CMD %d gui to BUSY", i + 1));
+                }
+            }
         }
-
     }
 }
+
+
+
+void MainWindow::OnButtonEvent(wxCommandEvent& event){
+
+    if (event.GetId() == windowIDs::ID_RUN_COMMAND_BT) {
+        onRunCommand(event);
+    }
+    else {
+        for (int i = 0; i < nrOfCMDs; i++) {
+            if (event.GetId() == (arrayOfGuiCMDs[i]->getCurrId() + arrayOfGuiCMDs[i]->RUNBUTTON_ID_INDEX)) {
+                if (arrayOfGuiCMDs[i]->setRunning(true)) {
+                    StartThread(arrayOfGuiCMDs[i]->getCmd(), i, true);
+                    //Cycling in loop untile the CMD that was run in sequential mode sets blockingThread in false
+                    //wxYield() makes GUI still responsive inside a loop that can potentially run infinitely in cas thread never ends
+                    //TODO add possibility to break it programmatically maby a menu item with chortcut
+                    while (blockingThread) {
+                        wxYield();
+                    }
+                }
+                else {
+                    AddMessage(get_current_timestamp(), wxString::Format("Couldn't set the CMD %d gui to BUSY", i + 1));
+                }
+            }
+        }
+    }
+}
+
 
 void MainWindow::OnAbout(wxCommandEvent& event)
 {
@@ -202,6 +238,8 @@ void MainWindow::SelectAllItems() {
         resultList->SetItemState(itemIndex, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED);
     }
 }
+
+
 wxString MainWindow::get_current_timestamp() {
     using namespace std::chrono;
 
@@ -293,6 +331,7 @@ void MainWindow::onRunCommand(wxCommandEvent& event)
 
     for (int i = 0; i < nrOfCMDs; i++) {
         if (arrayOfGuiCMDs[i]->getRunning()) {
+            AddMessage(get_current_timestamp(), wxString::Format("Found cmd %d active", i + 1));
             foundAtLeasOne = true;
         }
         //Setting all gui CMDs to default true

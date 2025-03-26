@@ -80,7 +80,8 @@ private:
     void SelectAllItems();
     void OnEnable(wxCommandEvent& event);
     void OnDisable(wxCommandEvent& event);
-    void OnCheckBoxEvent(wxCommandEvent& event);
+    void OnGuiEvent(wxCommandEvent& event);
+    void OnButtonEvent(wxCommandEvent& event);
     void EnableCmds();
     void DisableCmds();
     void OnClose(wxCloseEvent& event);

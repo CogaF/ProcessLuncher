@@ -15,6 +15,7 @@ private:
 	wxTextCtrl*		Cmd_txt;
 	wxTextCtrl*		Cmd_res;
 	wxStaticText*	Cmd_counters;
+	wxButton*		Cmd_run_bt;
 
 	wxString _cmdName = "ping google.com";
 	wxString _positiveVal = ":File:C:\\temp\\result.txt::StringPASS_InFile";
@@ -31,10 +32,11 @@ private:
 public:
 
 	int SEQUENTIAL_ID_INDEX = 1;
-	int TEXT_ID_INDEX = 2;
-	int RES_ID_INDEX = 3;
-	int COUNTERS_ID_INDEX = 4;
-	int VIEW_ID_INDEX = 5;
+	int RUNBUTTON_ID_INDEX = 2;
+	int TEXT_ID_INDEX = 3;
+	int RES_ID_INDEX = 4;
+	int COUNTERS_ID_INDEX = 5;
+	int VIEW_ID_INDEX = 6;
 
 	wxCheckBox* Cmd_active_CB;
 	wxCheckBox* Cmd_sequential_CB;
@@ -58,7 +60,7 @@ public:
 	bool setCurrIds(int currId);
 	int getCurrId(); 
 	bool update();
-	bool setRunning(bool runninglStatus);
+	bool setRunning(bool runningStatus);
 	bool getRunning();
 	void disable();
 	void enable();
