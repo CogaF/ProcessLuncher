@@ -72,6 +72,7 @@ private:
     void AddMessage(const wxString& timestamp, const wxString& message);
     wxString get_current_timestamp();
     std::string RunCommand(const std::string& command, int commandIndex);
+    std::string RunCommandTest(const std::string& command, int commandIndex);
     void StartThread(const wxString& input, int commandIndex, bool sequentialStatus);
     void OnThreadResult(wxCommandEvent& event); 
     void OnKeyDown(wxKeyEvent& event);

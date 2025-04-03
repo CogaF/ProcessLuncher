@@ -154,6 +154,10 @@ void MainWindow::OnGuiEvent(wxCommandEvent& event)
 void MainWindow::OnButtonEvent(wxCommandEvent& event){
 
     if (event.GetId() == windowIDs::ID_RUN_COMMAND_BT) {
+        //std::string cmd = "pdflatex D:\\EGO\\TexMaker\\Template\\Template.tex";
+        //AddMessage(get_current_timestamp(), wxString::Format("The following command will be run: %s", cmd));
+        //wxString thisTest = RunCommandTest("pdflatex D:\\EGO\\TexMaker\\Template\\Template.tex", 1);
+        //AddMessage(get_current_timestamp(), thisTest);
         onRunCommand(event);
     }
     else {
@@ -505,6 +509,74 @@ std::string MainWindow::RunCommand(const std::string& command, int commandIndex)
 }
 
 
+// Function to run the command and capture output
+std::string MainWindow::RunCommandTest(const std::string& command, int commandIndex) {
+
+    // Create pipes for capturing output
+    HANDLE hRead, hWrite;
+    SECURITY_ATTRIBUTES saAttr = { sizeof(SECURITY_ATTRIBUTES), NULL, TRUE };
+
+    if (!CreatePipe(&hRead, &hWrite, &saAttr, 0)) {
+        return "Error: Failed to create pipe!";
+    }
+
+    STARTUPINFOA si = { sizeof(STARTUPINFOA) };
+    PROCESS_INFORMATION pi = { 0 };
+
+    si.dwFlags = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
+    si.wShowWindow = SW_HIDE;  // Hides the window
+    si.hStdOutput = hWrite;
+    si.hStdError = hWrite;  // Redirect stderr to stdout
+
+
+    int viewFlag = CREATE_NO_WINDOW;
+    if (arrayOfGuiCMDs[commandIndex]->getView()) {
+
+        // We will write to both the pipe and the console
+        si.dwFlags = STARTF_USESTDHANDLES;
+        // Duplicate the write handle to the console output (stdout)
+        HANDLE hStdOutDup;
+        DuplicateHandle(GetCurrentProcess(), hWrite, GetCurrentProcess(), &hStdOutDup, 0, TRUE, DUPLICATE_SAME_ACCESS);
+
+        si.hStdOutput = hStdOutDup; // Output goes to both the pipe and the console
+        si.hStdError = hStdOutDup;  // Error goes to both the pipe and the console
+        CloseHandle(hStdOutDup);
+        viewFlag = CREATE_NEW_CONSOLE;
+    }
+    // Create the process
+    if (!CreateProcessA(NULL, (LPSTR)(("cmd /c \"" + command + "\"").c_str()), NULL, NULL, TRUE, CREATE_NEW_CONSOLE, NULL, NULL, &si, &pi)) {
+        CloseHandle(hRead);
+        CloseHandle(hWrite);
+        return "Error: Failed to execute command!";
+    }
+
+    // Close the write handle to allow reading from the pipe
+    CloseHandle(hWrite);
+
+    // Read the command output
+    std::string result;
+    char buffer[0xFFFF];
+    DWORD bytesRead;
+
+    while (ReadFile(hRead, buffer, sizeof(buffer) - 1, &bytesRead, NULL) && bytesRead > 0) {
+        wxYield();
+        if (bytesRead >= sizeof(buffer)) {
+            buffer[sizeof(buffer) - 1] = '\0';  // Prevent overflow
+        }
+        else {
+            buffer[bytesRead] = '\0';  // Safe termination
+        }
+        result += buffer;
+    }
+
+    // Cleanup
+    CloseHandle(hRead);
+    WaitForSingleObject(pi.hProcess, INFINITE);
+    CloseHandle(pi.hProcess);
+    CloseHandle(pi.hThread);
+    wxYield();
+    return result;
+}
 // Update UI when result is received
 void MainWindow::OnThreadResult(wxCommandEvent& event) {
     for (int i = 0; i < nrOfCMDs; i++) {
