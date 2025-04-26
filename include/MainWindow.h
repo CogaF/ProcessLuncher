@@ -1,6 +1,6 @@
 /*
-    This is an application that was created by me Coga Fation but truth be told 
-    that without the help of ChatGpt it could have taken many many hours 
+    This is an application that was created by me, Coga Fation but truth be told 
+    that without the help of ChatGpt it could have taken many, many hours 
     I'm taking for granted that I would have reached the same results which is a long shot
 */
 #pragma once
@@ -32,6 +32,9 @@
 #include <wx/file.h>
 
 #define SEQUENTIAL true
+
+//more than 25 means that there will be needed a display with many pixels/resolution in the y direction since the 
+//result list is on the bottom of the commands
 #define MaxNrOfCMDs 25
 
 class MainWindow : public wxFrame

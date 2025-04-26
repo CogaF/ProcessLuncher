@@ -1,5 +1,5 @@
 /*
-    This is an application that was created by me Coga Fation but truth be told
+    This is an application that was created by me, Coga Fation but truth be told
     that without the help of ChatGpt it could have taken many many hours
     I'm taking for granted that I would have reached the same results which is a long shot
 */
@@ -31,10 +31,6 @@ MainWindow::MainWindow()
     menuBar->Append(menuFile,       "&File");
     menuBar->Append(settingsMenu,   "&Settings");
     menuBar->Append(menuHelp,       "&Info");
-
-
-
-
 
     SetMenuBar(menuBar);
 
@@ -79,11 +75,19 @@ MainWindow::MainWindow()
     resultList->SetColumnWidth(0, timestampWidth); // Timestamp column
     resultList->SetColumnWidth(1, messageWidth);   // Message column
 
-    for (int i = 0; i < nrOfCMDs; i++) {
-        arrayOfGuiCMDs[i] = new cmdgui(mainPanel, i);
-        arrayOfGuiCMDs[i]->setCounters(wxString::Format("counters of CMD: %d", i+1));
-        arrayOfGuiCMDs_sz[i] = arrayOfGuiCMDs[i]->getPointer();
-        cmdsSizer->Add(arrayOfGuiCMDs_sz[i], 1, wxEXPAND | wxALL, 1);
+    //more than 25 command make harder for the list of results to be seen
+    //in case there are need more, consider making the sizer of the commands scrollable
+    if (nrOfCMDs < MaxNrOfCMDs) {
+        for (int i = 0; i < nrOfCMDs; i++) {
+            arrayOfGuiCMDs[i] = new cmdgui(mainPanel, i);
+            arrayOfGuiCMDs[i]->setCounters(wxString::Format("counters of CMD: %d", i + 1));
+            arrayOfGuiCMDs_sz[i] = arrayOfGuiCMDs[i]->getPointer();
+            cmdsSizer->Add(arrayOfGuiCMDs_sz[i], 1, wxEXPAND | wxALL, 1);
+        }
+    }
+    else {
+        wxMessageBox("Number of commands to create exceeds maximum commands allowed\n\n(nrOfCMDs > axNrOfCMDs)\n\nThe app will be closed", "ERROR");
+        Destroy();
     }
     
     wxIcon _frame_icon(wxICON(MAINICON));
@@ -108,7 +112,8 @@ void MainWindow::OnExit(wxCommandEvent& event)
     Close(true);
 }
 
-
+//an event in gui will be checked and sorted properly
+//to perform the desired tastk
 void MainWindow::OnGuiEvent(wxCommandEvent& event)
 {
     for (int i = 0; i < nrOfCMDs; i++) {
@@ -303,6 +308,7 @@ void MainWindow::CopySelectedRow() {
         wxTheClipboard->Close();
     }
 }
+
 // Function to add message to the list
 void MainWindow::AddMessage(const wxString& timestamp, const wxString& message) {
     // Insert the new message at the top
@@ -318,6 +324,9 @@ void MainWindow::OnClose(wxCloseEvent& event) {
             "Request to quit application",
             wxICON_QUESTION | wxYES_NO) != wxYES)
         {
+            // like the power that China, France, Russia, United Kingdom and United States
+            // has in the  UN Security Council resolutions this grants the power to abort closing 
+            // the window
             event.Veto();
             return;
         }
@@ -430,16 +439,18 @@ void MainWindow::StartThread(const wxString& input, int CommandIndex, bool seque
         event.SetInt(CommandIndex);
         wxQueueEvent(this, event.Clone());
 
-        }).detach();  // Join to run it sequentially
+        }).detach();  // detach to run it without blocking main
     
     wxYield();
-    #ifdef _DEBUG
+    #ifdef _DEBUG //this will run only if build is done in debug mode 
         AddMessage(get_current_timestamp(), wxString::Format("Started thread for CMD %d", CommandIndex+1));
     #endif
 }
 
 
 // Function to run the command and capture output
+// This is supposed to run console without any visual indication that it is running
+// the result from the console command will be put in a pipe without any gui indication
 std::string MainWindow::RunCommand(const std::string& command, int commandIndex) {
 
     // Create pipes for capturing output
@@ -447,6 +458,7 @@ std::string MainWindow::RunCommand(const std::string& command, int commandIndex)
     SECURITY_ATTRIBUTES saAttr = { sizeof(SECURITY_ATTRIBUTES), NULL, TRUE };
 
     if (!CreatePipe(&hRead, &hWrite, &saAttr, 0)) {
+        //Never happened to see this case
         return "Error: Failed to create pipe!";
     }
 
@@ -460,19 +472,30 @@ std::string MainWindow::RunCommand(const std::string& command, int commandIndex)
 
 
     int viewFlag = CREATE_NO_WINDOW;
+    /*
+    *   The following code is part of a failed attempt to
+    *   make it possible to have the result of the console command be seen visually
+    *   and put into the pipe. Seems that it can be either seen or puted into the pipe not both
+    *   chatGpt was convinced that it is possiblebut failed to give a working version.
+    *   IMO this can be done only if redirecting the result captured in the pipe to a new console instead
+    *   of having it be copied before going to the pipe. 
+    *   I didn't try this path since my goal in trying to do this was to actually see what made the app
+    *   crash. In future it can be usefull to have the resul be visually seen but time is precious...
+    * 
+    *   BEWARE the command has the "hide/View" setting disabled 
     if (arrayOfGuiCMDs[commandIndex]->getView()) {
         
-        // We will write to both the pipe and the console
+        //write to the pipe
         si.dwFlags = STARTF_USESTDHANDLES;
-        // Duplicate the write handle to the console output (stdout)
         HANDLE hStdOutDup;
         DuplicateHandle(GetCurrentProcess(), hWrite, GetCurrentProcess(), &hStdOutDup, 0, TRUE, DUPLICATE_SAME_ACCESS);
 
-        si.hStdOutput = hStdOutDup; // Output goes to both the pipe and the console
-        si.hStdError = hStdOutDup;  // Error goes to both the pipe and the console
+        si.hStdOutput = hStdOutDup; // Output goes to the pipe 
+        si.hStdError = hStdOutDup;  // Error goes to the pipe 
         CloseHandle(hStdOutDup);
         viewFlag = CREATE_NEW_CONSOLE;
     }
+    */
     // Create the process
     if (!CreateProcessA(NULL, (LPSTR)(("cmd /c \"" + command + "\"").c_str()), NULL, NULL, TRUE, viewFlag, NULL, NULL, &si, &pi)) {
         CloseHandle(hRead);
@@ -485,7 +508,10 @@ std::string MainWindow::RunCommand(const std::string& command, int commandIndex)
 
     // Read the command output
     std::string result;
-    char buffer[0xBFFFF];
+
+    //Supposingly 786431 = 0xBFFFF bytes can be read fro the pipe
+    //initializin a buffer with greater size might slow down a lot since already this size is not that small
+    char buffer[0xBFFFF]{};
     DWORD bytesRead;
 
     while (ReadFile(hRead, buffer, sizeof(buffer) - 1, &bytesRead, NULL) && bytesRead > 0) {
@@ -510,6 +536,7 @@ std::string MainWindow::RunCommand(const std::string& command, int commandIndex)
 
 
 // Function to run the command and capture output
+// just a copy of the prvious one to use for testing/debuggin purpose in case modifications needs to be checked
 std::string MainWindow::RunCommandTest(const std::string& command, int commandIndex) {
 
     // Create pipes for capturing output
@@ -577,7 +604,8 @@ std::string MainWindow::RunCommandTest(const std::string& command, int commandIn
     wxYield();
     return result;
 }
-// Update UI when result is received
+
+// Updates UI when result is received
 void MainWindow::OnThreadResult(wxCommandEvent& event) {
     for (int i = 0; i < nrOfCMDs; i++) {
         int eventId = event.GetId();
@@ -660,6 +688,8 @@ void MainWindow::OnThreadResult(wxCommandEvent& event) {
     }
 }
 
+
+//exctracs the file name from the textctrl (GUI)
 wxString MainWindow::extractFileName(wxString completeString) {
     wxString toReturn = "";
     int indexOfStartFilename = completeString.Find(searchOnFIle_s) + searchOnFIle_s.length();
@@ -668,7 +698,7 @@ wxString MainWindow::extractFileName(wxString completeString) {
     return toReturn;
 }
 
-
+//extracts the string to be considered as positive from the textctrl (GUI)
 wxString MainWindow::extractPositiveResult(wxString completeString) {
     wxString toReturn = "";
     int indexOfEndOfSeparator = completeString.find_last_of(separator)+1;
@@ -677,6 +707,10 @@ wxString MainWindow::extractPositiveResult(wxString completeString) {
 
 }
 
+
+// a not so quick function to perform a search in file
+// it isn't that quick but it can read without loading all the file in memory (RAM) but instead it reads
+// line by line which means multiple lines cannot be performed
 bool MainWindow::FindInFile(const wxString& filePath, const wxString& searchString)
 {
     bool toRetrun = false;
