@@ -113,8 +113,10 @@ wxString newFileTemplate()
 
 } // namespace
 
+// Note: FromDIP() must not be called on "this" in the initializer list (the window does not exist yet);
+// the static form with the parent window is safe (a null parent uses the primary display).
 BatchEditorFrame::BatchEditorFrame(wxWindow* parent, const wxString& path)
-    : wxFrame(parent, wxID_ANY, "Batch file editor", wxDefaultPosition, FromDIP(wxSize(1150, 720))),
+    : wxFrame(parent, wxID_ANY, "Batch file editor", wxDefaultPosition, wxWindow::FromDIP(wxSize(1150, 720), parent)),
       m_timer(this, ID_HIGHLIGHT_TIMER)
 {
     m_fontSize = std::clamp(AppSettings::getInt("editorFontSize", 11), kMinFontSize, kMaxFontSize);
