@@ -139,7 +139,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <!-- wxWidgets libraries are linked automatically by wx/msw/setup.h (include\msvc). -->
-      <AdditionalDependencies>comctl32.lib;rpcrt4.lib;ws2_32.lib;uxtheme.lib;oleacc.lib;winmm.lib;shlwapi.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;rpcrt4.lib;ws2_32.lib;uxtheme.lib;oleacc.lib;winmm.lib;shlwapi.lib;version.lib;advapi32.lib;user32.lib;gdi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
       <!-- The linker writes the manifest (wx.rc's own is switched off with wxUSE_NO_MANIFEST=1, or
            the two would clash): themed common controls v6 + per-monitor DPI awareness. -->
@@ -152,6 +152,11 @@
       <AdditionalIncludeDirectories>$(WXWIN)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_DEBUG;wxUSE_NO_MANIFEST=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
+    <PostBuildEvent>
+      <Command>if not exist "$(OutDir)bat_examples\" mkdir "$(OutDir)bat_examples"
+xcopy /y /d /s "$(ProjectDir)bat_examples\*" "$(OutDir)bat_examples\"</Command>
+      <Message>Copying the example batch files next to the exe</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -172,7 +177,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <!-- wxWidgets libraries are linked automatically by wx/msw/setup.h (include\msvc). -->
-      <AdditionalDependencies>comctl32.lib;rpcrt4.lib;ws2_32.lib;uxtheme.lib;oleacc.lib;winmm.lib;shlwapi.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;rpcrt4.lib;ws2_32.lib;uxtheme.lib;oleacc.lib;winmm.lib;shlwapi.lib;version.lib;advapi32.lib;user32.lib;gdi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
       <!-- The linker writes the manifest (wx.rc's own is switched off with wxUSE_NO_MANIFEST=1, or
            the two would clash): themed common controls v6 + per-monitor DPI awareness. -->
@@ -185,6 +190,11 @@
       <AdditionalIncludeDirectories>$(WXWIN)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;wxUSE_NO_MANIFEST=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
+    <PostBuildEvent>
+      <Command>if not exist "$(OutDir)bat_examples\" mkdir "$(OutDir)bat_examples"
+xcopy /y /d /s "$(ProjectDir)bat_examples\*" "$(OutDir)bat_examples\"</Command>
+      <Message>Copying the example batch files next to the exe</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_DLL|x64'">
     <ClCompile>
@@ -201,7 +211,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <!-- wxWidgets libraries are linked automatically by wx/msw/setup.h (include\msvc). -->
-      <AdditionalDependencies>comctl32.lib;rpcrt4.lib;ws2_32.lib;uxtheme.lib;oleacc.lib;winmm.lib;shlwapi.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;rpcrt4.lib;ws2_32.lib;uxtheme.lib;oleacc.lib;winmm.lib;shlwapi.lib;version.lib;advapi32.lib;user32.lib;gdi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
       <!-- The linker writes the manifest (wx.rc's own is switched off with wxUSE_NO_MANIFEST=1, or
            the two would clash): themed common controls v6 + per-monitor DPI awareness. -->
@@ -215,8 +225,10 @@
       <PreprocessorDefinitions>_DEBUG;wxUSE_NO_MANIFEST=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
     <PostBuildEvent>
-      <Command>if exist "$(WxLibDir)\$(WxDllPattern)" xcopy /y /d "$(WxLibDir)\$(WxDllPattern)" "$(OutDir)"</Command>
-      <Message>Copying the wxWidgets DLLs next to the exe</Message>
+      <Command>if not exist "$(OutDir)bat_examples\" mkdir "$(OutDir)bat_examples"
+xcopy /y /d /s "$(ProjectDir)bat_examples\*" "$(OutDir)bat_examples\"
+if exist "$(WxLibDir)\$(WxDllPattern)" xcopy /y /d "$(WxLibDir)\$(WxDllPattern)" "$(OutDir)"</Command>
+      <Message>Copying the example batch files and the wxWidgets DLLs next to the exe</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_DLL|x64'">
@@ -238,7 +250,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <!-- wxWidgets libraries are linked automatically by wx/msw/setup.h (include\msvc). -->
-      <AdditionalDependencies>comctl32.lib;rpcrt4.lib;ws2_32.lib;uxtheme.lib;oleacc.lib;winmm.lib;shlwapi.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;rpcrt4.lib;ws2_32.lib;uxtheme.lib;oleacc.lib;winmm.lib;shlwapi.lib;version.lib;advapi32.lib;user32.lib;gdi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
       <!-- The linker writes the manifest (wx.rc's own is switched off with wxUSE_NO_MANIFEST=1, or
            the two would clash): themed common controls v6 + per-monitor DPI awareness. -->
@@ -252,8 +264,10 @@
       <PreprocessorDefinitions>NDEBUG;wxUSE_NO_MANIFEST=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
     <PostBuildEvent>
-      <Command>if exist "$(WxLibDir)\$(WxDllPattern)" xcopy /y /d "$(WxLibDir)\$(WxDllPattern)" "$(OutDir)"</Command>
-      <Message>Copying the wxWidgets DLLs next to the exe</Message>
+      <Command>if not exist "$(OutDir)bat_examples\" mkdir "$(OutDir)bat_examples"
+xcopy /y /d /s "$(ProjectDir)bat_examples\*" "$(OutDir)bat_examples\"
+if exist "$(WxLibDir)\$(WxDllPattern)" xcopy /y /d "$(WxLibDir)\$(WxDllPattern)" "$(OutDir)"</Command>
+      <Message>Copying the example batch files and the wxWidgets DLLs next to the exe</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -271,7 +285,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <!-- wxWidgets libraries are linked automatically by wx/msw/setup.h (include\msvc). -->
-      <AdditionalDependencies>comctl32.lib;rpcrt4.lib;ws2_32.lib;uxtheme.lib;oleacc.lib;winmm.lib;shlwapi.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;rpcrt4.lib;ws2_32.lib;uxtheme.lib;oleacc.lib;winmm.lib;shlwapi.lib;version.lib;advapi32.lib;user32.lib;gdi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
       <!-- The linker writes the manifest (wx.rc's own is switched off with wxUSE_NO_MANIFEST=1, or
            the two would clash): themed common controls v6 + per-monitor DPI awareness. -->
@@ -284,6 +298,11 @@
       <AdditionalIncludeDirectories>$(WXWIN)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_DEBUG;wxUSE_NO_MANIFEST=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
+    <PostBuildEvent>
+      <Command>if not exist "$(OutDir)bat_examples\" mkdir "$(OutDir)bat_examples"
+xcopy /y /d /s "$(ProjectDir)bat_examples\*" "$(OutDir)bat_examples\"</Command>
+      <Message>Copying the example batch files next to the exe</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -304,7 +323,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <!-- wxWidgets libraries are linked automatically by wx/msw/setup.h (include\msvc). -->
-      <AdditionalDependencies>comctl32.lib;rpcrt4.lib;ws2_32.lib;uxtheme.lib;oleacc.lib;winmm.lib;shlwapi.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;rpcrt4.lib;ws2_32.lib;uxtheme.lib;oleacc.lib;winmm.lib;shlwapi.lib;version.lib;advapi32.lib;user32.lib;gdi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
       <!-- The linker writes the manifest (wx.rc's own is switched off with wxUSE_NO_MANIFEST=1, or
            the two would clash): themed common controls v6 + per-monitor DPI awareness. -->
@@ -317,6 +336,11 @@
       <AdditionalIncludeDirectories>$(WXWIN)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;wxUSE_NO_MANIFEST=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
+    <PostBuildEvent>
+      <Command>if not exist "$(OutDir)bat_examples\" mkdir "$(OutDir)bat_examples"
+xcopy /y /d /s "$(ProjectDir)bat_examples\*" "$(OutDir)bat_examples\"</Command>
+      <Message>Copying the example batch files next to the exe</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_DLL|Win32'">
     <ClCompile>
@@ -333,7 +357,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <!-- wxWidgets libraries are linked automatically by wx/msw/setup.h (include\msvc). -->
-      <AdditionalDependencies>comctl32.lib;rpcrt4.lib;ws2_32.lib;uxtheme.lib;oleacc.lib;winmm.lib;shlwapi.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;rpcrt4.lib;ws2_32.lib;uxtheme.lib;oleacc.lib;winmm.lib;shlwapi.lib;version.lib;advapi32.lib;user32.lib;gdi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
       <!-- The linker writes the manifest (wx.rc's own is switched off with wxUSE_NO_MANIFEST=1, or
            the two would clash): themed common controls v6 + per-monitor DPI awareness. -->
@@ -347,8 +371,10 @@
       <PreprocessorDefinitions>_DEBUG;wxUSE_NO_MANIFEST=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
     <PostBuildEvent>
-      <Command>if exist "$(WxLibDir)\$(WxDllPattern)" xcopy /y /d "$(WxLibDir)\$(WxDllPattern)" "$(OutDir)"</Command>
-      <Message>Copying the wxWidgets DLLs next to the exe</Message>
+      <Command>if not exist "$(OutDir)bat_examples\" mkdir "$(OutDir)bat_examples"
+xcopy /y /d /s "$(ProjectDir)bat_examples\*" "$(OutDir)bat_examples\"
+if exist "$(WxLibDir)\$(WxDllPattern)" xcopy /y /d "$(WxLibDir)\$(WxDllPattern)" "$(OutDir)"</Command>
+      <Message>Copying the example batch files and the wxWidgets DLLs next to the exe</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_DLL|Win32'">
@@ -370,7 +396,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <!-- wxWidgets libraries are linked automatically by wx/msw/setup.h (include\msvc). -->
-      <AdditionalDependencies>comctl32.lib;rpcrt4.lib;ws2_32.lib;uxtheme.lib;oleacc.lib;winmm.lib;shlwapi.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;rpcrt4.lib;ws2_32.lib;uxtheme.lib;oleacc.lib;winmm.lib;shlwapi.lib;version.lib;advapi32.lib;user32.lib;gdi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
       <!-- The linker writes the manifest (wx.rc's own is switched off with wxUSE_NO_MANIFEST=1, or
            the two would clash): themed common controls v6 + per-monitor DPI awareness. -->
@@ -384,26 +410,75 @@
       <PreprocessorDefinitions>NDEBUG;wxUSE_NO_MANIFEST=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
     <PostBuildEvent>
-      <Command>if exist "$(WxLibDir)\$(WxDllPattern)" xcopy /y /d "$(WxLibDir)\$(WxDllPattern)" "$(OutDir)"</Command>
-      <Message>Copying the wxWidgets DLLs next to the exe</Message>
+      <Command>if not exist "$(OutDir)bat_examples\" mkdir "$(OutDir)bat_examples"
+xcopy /y /d /s "$(ProjectDir)bat_examples\*" "$(OutDir)bat_examples\"
+if exist "$(WxLibDir)\$(WxDllPattern)" xcopy /y /d "$(WxLibDir)\$(WxDllPattern)" "$(OutDir)"</Command>
+      <Message>Copying the example batch files and the wxWidgets DLLs next to the exe</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\AboutDialog.cpp" />
     <ClCompile Include="src\App.cpp" />
+    <ClCompile Include="src\AppSettings.cpp" />
+    <ClCompile Include="src\BatCommands.cpp" />
+    <ClCompile Include="src\BatHighlighter.cpp" />
+    <ClCompile Include="src\BatchEditorFrame.cpp" />
+    <ClCompile Include="src\BuildInfo.cpp" />
     <ClCompile Include="src\cmdgui.cpp" />
+    <ClCompile Include="src\DataDir.cpp" />
+    <ClCompile Include="src\Ed25519.cpp" />
+    <ClCompile Include="src\HashUtils.cpp" />
+    <ClCompile Include="src\License.cpp" />
+    <ClCompile Include="src\LicenseDialog.cpp" />
+    <ClCompile Include="src\LicenseManager.cpp" />
+    <ClCompile Include="src\Log.cpp" />
+    <ClCompile Include="src\MachineId.cpp" />
     <ClCompile Include="src\MainWindow.cpp" />
+    <ClCompile Include="src\ResultCheck.cpp" />
+    <ClCompile Include="src\StatusLed.cpp" />
+    <ClCompile Include="src\TextUtils.cpp" />
+    <ClCompile Include="src\TimeUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\AboutDialog.h" />
     <ClInclude Include="include\App.h" />
+    <ClInclude Include="include\AppInfo.h" />
+    <ClInclude Include="include\AppSettings.h" />
+    <ClInclude Include="include\BatCommands.h" />
+    <ClInclude Include="include\BatHighlighter.h" />
+    <ClInclude Include="include\BatchEditorFrame.h" />
+    <ClInclude Include="include\BuildInfo.h" />
     <ClInclude Include="include\cmdgui.h" />
+    <ClInclude Include="include\DataDir.h" />
+    <ClInclude Include="include\Ed25519.h" />
+    <ClInclude Include="include\HashUtils.h" />
+    <ClInclude Include="include\I18n.h" />
     <ClInclude Include="include\Id.h" />
+    <ClInclude Include="include\License.h" />
+    <ClInclude Include="include\LicenseDialog.h" />
+    <ClInclude Include="include\LicenseHost.h" />
+    <ClInclude Include="include\LicenseKeys.h" />
+    <ClInclude Include="include\LicenseManager.h" />
+    <ClInclude Include="include\LicensePolicy.h" />
+    <ClInclude Include="include\Log.h" />
+    <ClInclude Include="include\MachineId.h" />
     <ClInclude Include="include\MainWindow.h" />
+    <ClInclude Include="include\ResultCheck.h" />
+    <ClInclude Include="include\StatusLed.h" />
+    <ClInclude Include="include\TextUtils.h" />
+    <ClInclude Include="include\TimeUtils.h" />
+    <ClInclude Include="include\UVT.h" />
+    <ClInclude Include="include\Version.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ProcessLuncher.rc" />
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md" />
+    <None Include="DEPENDENCIES.md" />
+    <None Include="LICENSING.md" />
+    <None Include="bat_examples\README.md" />
+    <None Include="tests\ProcessLauncherSelfTest.cpp" />
     <None Include="Doxyfile" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

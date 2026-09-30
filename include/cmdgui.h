@@ -23,8 +23,9 @@
  *
  * The "expected result" text has two forms:
  *  - plain text: the command passes when its console output contains the text;
- *  - <tt>:File:&lt;path&gt;::&lt;text&gt;</tt>: the command passes when the file \<path\> contains the text
- *    (for commands that write their result to a file instead of the console).
+ *  - <tt>:File:&lt;path&gt;::&lt;text&gt;</tt>: the command passes when the file contains the text (for
+ *    commands that write their result to a file instead of the console). With an empty path,
+ *    <tt>:File:::&lt;text&gt;</tt>, the program's result file is meant (see ResultCheck.h).
  */
 class cmdgui
 {
@@ -149,8 +150,8 @@ private:
     wxStaticText* Cmd_counters = nullptr;     /*!< "P= nnn || F= nnn" pass / fail counters. */
     wxButton*     Cmd_run_bt = nullptr;       /*!< runs only this command. */
 
-    wxString _cmdName = "ping google.com";                                  /*!< default command. */
-    wxString _positiveVal = ":File:C:\\temp\\result.txt::StringPASS_InFile"; /*!< default expected result. */
+    wxString _cmdName = "ping -n 1 127.0.0.1";                               /*!< default command. */
+    wxString _positiveVal = "TTL=";                                           /*!< default expected result. */
     wxString _counters;                       /*!< text of the counters label. */
     bool _isActive = true;                    /*!< ON/OFF. */
     bool _isSequential = false;               /*!< single (true) or parallel (false). */

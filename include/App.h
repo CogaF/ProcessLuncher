@@ -12,6 +12,8 @@
 /*!
  * \brief Application object.
  *
+ * OnInit() also opens the log (<data folder>/log.txt) and starts the license system.
+ *
  * Process Launcher is a small tool without a theme setting, so it always starts in dark mode:
  * OnInit() calls wxApp::SetAppearance() (wxWidgets 3.3+) before the first window exists, and
  * FilterEvent() colours every top-level window the first time it is shown and gives it the
@@ -25,6 +27,9 @@ public:
      * \return false to abort the start-up.
      */
     bool OnInit() override;
+
+    /*! \brief Closes the log file. \return the exit code. */
+    int OnExit() override;
 
     /*!
      * \brief Sees every event before the window it is meant for.

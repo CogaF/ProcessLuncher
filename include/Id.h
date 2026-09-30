@@ -26,6 +26,16 @@ enum id {
     ID_DISABLE_EDIT,                  /*!< Menu: lock the editable fields of the command rows. */
     ID_ENABLE_EDIT,                   /*!< Menu: unlock the editable fields of the command rows. */
     ID_STOP_WAITING,                  /*!< Menu: stop waiting for a "single" (sequential) command. */
+    ID_NEW_BATCH,                     /*!< Menu File: new batch file in the editor. */
+    ID_OPEN_BATCH,                    /*!< Menu File: open a batch file in the editor. */
+    ID_OPEN_EXAMPLES,                 /*!< Menu File: open the folder with the example batch files. */
+    ID_LICENSE,                       /*!< Menu Info: the License window. */
+    ID_OPEN_DATA_FOLDER,              /*!< Menu Settings: open the data folder. */
+    ID_OPEN_RESULT_FILE,              /*!< Menu Settings: open the result file with its default program. */
+    ID_SELECT_RESULT_FILE,            /*!< Menu Settings: choose the result file. */
+    ID_RESULT_FILE_TXT,               /*!< The text entry that shows the full path of the result file. */
+    ID_RESULT_BROWSE_BT,              /*!< The button next to it that chooses another file. */
+    ID_LICENSE_TIMER,                 /*!< Timer that re-checks the license dates. */
 
     ID_GUI_CLASS = wxID_HIGHEST + 251 /*!< First id of the command rows (see cmdRowBaseId()). */
 };

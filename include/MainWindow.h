@@ -14,7 +14,9 @@
 #include <wx/panel.h>
 #include <wx/sizer.h>
 #include <wx/string.h>
+#include <wx/textctrl.h>
 #include <wx/thread.h>
+#include <wx/timer.h>
 
 #include <array>
 #include <memory>
@@ -54,13 +56,21 @@ struct CommandOutcome
 wxDECLARE_EVENT(wxEVT_THREAD_RESULT, wxThreadEvent);
 
 /*!
- * \brief Main frame: a table of commands, a "Run command(s)" button and the list of results.
+ * \brief Main frame: a table of commands, a "Run command(s)" button, the result file and the list of results.
  *
  * Every command runs in its own worker thread, so the window stays responsive. A command is
  * <em>parallel</em> (started at once) or <em>single</em> (started alone: "Run command(s)" waits for it
  * to finish before it starts the next rows). When a command ends its output is searched for the
- * expected text (or, for results written to a file, the file is searched, see cmdgui); the outcome
- * is added to the list as PASS / FAIL and counted in the row.
+ * expected text (or, for results written to a file, the file is searched, see ResultCheck.h); the
+ * outcome is added to the list as PASS / FAIL and counted in the row.
+ *
+ * The <em>result file</em> (entry under the Run button, by default <tt>result.txt</tt> next to the
+ * exe) is where batch files append their time stamped PASS / FAIL lines; its path is given to every
+ * command in the environment variable PCR_RESULT_FILE. If it does not exist when a command needs
+ * it, the operator is asked to create it there or to choose another place.
+ *
+ * Running commands, "single" commands and the batch file editor are features of the license
+ * (LicensePolicy.h); without them a message offers the License window.
  *
  * All wxWidgets windows are touched only from the main thread: the workers send a
  * wxThreadEvent carrying a CommandOutcome.
@@ -85,8 +95,28 @@ private:
     // --- menu / control handlers -------------------------------------------------------------
     /*! \brief Menu File > Exit. */
     void OnExit(wxCommandEvent& event);
-    /*! \brief Menu Info > About. */
+    /*! \brief Menu Info > About: the structured About window. */
     void OnAbout(wxCommandEvent& event);
+    /*! \brief Menu Info > License (Ctrl-K). */
+    void OnLicense(wxCommandEvent& event);
+    /*! \brief Menu File > New batch file: opens the editor with the PASS / FAIL skeleton. */
+    void OnNewBatch(wxCommandEvent& event);
+    /*! \brief Menu File > Open batch file: opens the editor on a chosen file. */
+    void OnOpenBatch(wxCommandEvent& event);
+    /*! \brief Menu File > Open examples folder. */
+    void OnOpenExamples(wxCommandEvent& event);
+    /*! \brief Menu Settings > Open data folder. */
+    void OnOpenDataFolder(wxCommandEvent& event);
+    /*! \brief Menu Settings > Open result file. */
+    void OnOpenResultFile(wxCommandEvent& event);
+    /*! \brief Button "..." next to the result file entry, or menu Settings > Select result file. */
+    void OnSelectResultFile(wxCommandEvent& event);
+    /*! \brief Enter in the result file entry: takes the typed path. */
+    void OnResultFileEntered(wxCommandEvent& event);
+    /*! \brief The result file entry lost the focus: takes the typed path. */
+    void OnResultFileLostFocus(wxFocusEvent& event);
+    /*! \brief Every minute: re-evaluates the license when the day has changed. */
+    void OnLicenseTimer(wxTimerEvent& event);
     /*! \brief Menu Settings > Enable Edit: unlocks the editable fields of the rows. */
     void OnEnable(wxCommandEvent& event);
     /*! \brief Menu Settings > Disable Edit: locks the editable fields of the rows. */
@@ -155,10 +185,43 @@ private:
     /*! \brief Keeps the GUI alive until the blocking "single" command ends, is stopped or the window closes. */
     void WaitWhileBlocking();
 
-    // --- data -----------------------------------------------------------------------------------
-    const wxString m_searchOnFileTag = ":File:";       /*!< prefix of an expected result that refers to a file. */
-    const wxString m_separator = "::";                 /*!< separates the file name from the text to find. */
+    // --- result file ------------------------------------------------------------------------
+    /*! \brief \return the default result file: result.txt in the folder of the exe. */
+    static wxString DefaultResultFile();
+    /*! \brief \return the path in the result file entry (the default one if it is empty). */
+    wxString ResultFilePath() const;
+    /*!
+     * \brief Takes \p path as the result file: shows it, saves it and gives it to the commands (PCR_RESULT_FILE).
+     * \param path full path of the file (not created here).
+     */
+    void SetResultFile(const wxString& path);
+    /*!
+     * \brief Makes sure the result file exists.
+     *
+     * If it does not, asks whether to create it where it is expected ("Create here"), to choose
+     * another place ("Choose location...") or to give up. A new file gets one time stamped line.
+     * \return false if the operator gave up or the file could not be created.
+     */
+    bool EnsureResultFile();
+    /*! \brief Creates \p path (and its folder) and appends a time stamped line. \return false on failure. */
+    bool CreateResultFile(const wxString& path);
+    /*! \brief \return true if the expected result of row \p commandIndex refers to the result file. */
+    bool UsesResultFile(int commandIndex);
 
+    // --- license ----------------------------------------------------------------------------
+    /*!
+     * \brief Checks that a feature is licensed; if not, says why and offers the License window.
+     * \param feature a LicensePolicy::kFeature... key.
+     * \param featureName translated name of the feature for the message.
+     * \return true if the feature may be used.
+     */
+    bool RequireFeature(const char* feature, const wxString& featureName);
+    /*! \brief Shows the license state in the status bar. */
+    void UpdateLicenseStatus();
+    /*! \brief Opens the License window and refreshes the status bar afterwards. */
+    void ShowLicenseDialog();
+
+    // --- data -----------------------------------------------------------------------------------
     bool  m_blocking = false;           /*!< a "single" command is being waited for. */
     int   m_blockingCommandIndex = -1;  /*!< row of that command. */
     bool  m_runAllInProgress = false;   /*!< guards against re-entering onRunCommand() while it waits. */
@@ -167,6 +230,10 @@ private:
 
     std::shared_ptr<EventSink> m_sink = std::make_shared<EventSink>(); /*!< shared with the workers. */
 
+    bool  m_askingResultFile = false;   /*!< the "result file does not exist" question is open. */
+    wxTimer m_licenseTimer;             /*!< re-checks the license dates. */
+
+    wxTextCtrl* m_resultFileTxt = nullptr; /*!< shows (and edits) the full path of the result file. */
     wxPanel*    m_mainPanel = nullptr;    /*!< fills the frame. */
     wxButton*   m_runBT = nullptr;        /*!< "Run command(s)". */
     wxListCtrl* m_resultList = nullptr;   /*!< timestamp + information, newest on top. */

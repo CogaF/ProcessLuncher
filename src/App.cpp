@@ -15,6 +15,11 @@
 #include <wx/icon.h>
 #include <wx/toplevel.h>
 
+#include "AppInfo.h"
+#include "BuildInfo.h"
+#include "DataDir.h"
+#include "LicenseManager.h"
+#include "Log.h"
 #include "MainWindow.h"
 
 wxIMPLEMENT_APP(App);
@@ -59,11 +64,26 @@ bool App::OnInit()
     SetAppearance(wxApp::Appearance::Dark);
 #endif
 
-    SetAppDisplayName("Process Launcher");
+    SetAppDisplayName(AppInfo::kName);
+
+    // Log first, so everything after it is recorded (<data folder>/log.txt).
+    Log::setLevel(LogLevel::Info);
+    Log::enableFile(DataDir::file("log.txt"));
+    Log::info(std::string(AppInfo::kName) + " " + GetCompactVersion() + " starting, data folder: " + DataDir::path().string());
+
+    // License and trial state, before the first window (which shows them in its status bar).
+    Licensing::initialize();
 
     auto* frame = new MainWindow();
     frame->Show(true);
     return true;
+}
+
+int App::OnExit()
+{
+    Log::info("Exiting.");
+    Log::enableFile({});
+    return wxApp::OnExit();
 }
 
 int App::FilterEvent(wxEvent& event)

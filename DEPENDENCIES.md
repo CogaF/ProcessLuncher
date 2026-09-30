@@ -28,3 +28,12 @@ links the right ones. To use another layout override `WxLibDir` in a `Directory.
 
 The manifest (common controls v6, per-monitor DPI awareness) is written by the linker, so
 `wxUSE_NO_MANIFEST=1` is defined for the resource compiler; without it the dark appearance does not work.
+
+## Other libraries
+
+None. The license system (Ed25519, SHA-2) is part of the source; the batch editor uses the standard
+wxWidgets text control (no wxStyledTextCtrl, so no extra wxWidgets library is needed). The project also links
+`advapi32.lib` (trial state in the registry) - a Windows system library.
+
+`tests\ProcessLauncherSelfTest.cpp` tests the parts without GUI (result checking, batch highlighter); its
+build line is in the file.

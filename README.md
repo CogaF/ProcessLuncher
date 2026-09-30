@@ -19,9 +19,31 @@ Each command runs in its own thread, so the GUI never freezes. Results are added
 bottom (newest on top; green = PASS, red = FAIL). In the list Ctrl+A selects everything, Ctrl+C copies
 the selected rows, the tooltip shows the whole text of a row.
 
-The program always starts in **dark mode** (wxWidgets 3.3+). Note that with
-`:File:` the file is read when the command has finished: a result file left over from an earlier
-run can make a command pass, delete it in the command itself if that matters.
+The program always starts in **dark mode** (wxWidgets 3.3+).
+
+## Result file
+
+Under the Run button the **Result file** entry shows the full path of the file where batch files append
+their time stamped PASS / FAIL lines - by default `result.txt` in the folder of the exe - and `...`
+chooses another one. Commands receive it in the environment variable `PCR_RESULT_FILE`. When a command
+needs it and it does not exist, the program asks whether to create it there or to choose a place.
+An expected result of the form `:File:::PASS` (empty path) looks in this file, **only at what the
+command appended after it started**, so a PASS left by an earlier run is never counted.
+`:File:<path>::<text>` looks in the whole of another file.
+
+## Batch files
+
+`bat_examples\` has ready-made batch files that report PASS / FAIL and log to the result file (see its
+README). **File > Open batch file** (or **New batch file**) opens an editor with highlighting (commands
+bold, flow words, comments, labels, variables, strings, PASS / FAIL), A- / A+ for the text size and a
+pane with a button for every batch command: click to insert it, hover for the explanation (tooltip and
+status bar), right click for the details and an example.
+
+## License
+
+Running commands, *Single* mode and the batch editor need a license (14-day trial, then per-PC
+licenses): **Info > License**, see [LICENSING.md](LICENSING.md). **Info > About** shows the structured
+information window (about, license, changes, system).
 
 ## Building
 
@@ -33,6 +55,8 @@ Release_DLL (wxWidgets DLLs, copied next to the exe), x64 and Win32.
 
 Depends on the wxWidgets GUI library: <https://github.com/wxWidgets/wxWidgets>
 
-## Licence
+## Licence of the source
 
-MIT, see [LICENSE](LICENSE).
+MIT, see [LICENSE](LICENSE) - except the license-system files (`License*`, `Ed25519`, `HashUtils`,
+`MachineId`, `StatusLed`, `TextUtils`, `TimeUtils`), copied from the author's other products with their
+own header: Copyright (C) 2026 Fation Coga, proprietary.
