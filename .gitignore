@@ -396,3 +396,9 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# Process Launcher build output (see the .vcxproj) and Doxygen output
+Builds/
+obj/
+Outputs/
+docs/

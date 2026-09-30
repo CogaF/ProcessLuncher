@@ -1,0 +1,22 @@
+# Doxygen configuration - run "doxygen" in this folder; the HTML is written to docs/html/index.html.
+PROJECT_NAME           = "Process Launcher"
+PROJECT_BRIEF          = "Runs commands in parallel or in sequence and checks their result"
+OUTPUT_DIRECTORY       = docs
+INPUT                  = include src README.md DEPENDENCIES.md
+FILE_PATTERNS          = *.h *.cpp *.md
+USE_MDFILE_AS_MAINPAGE = README.md
+RECURSIVE              = NO
+EXTRACT_ALL            = NO
+EXTRACT_PRIVATE        = YES
+EXTRACT_STATIC         = YES
+EXTRACT_ANON_NSPACES   = YES
+JAVADOC_AUTOBRIEF      = NO
+QT_AUTOBRIEF           = NO
+WARN_IF_UNDOCUMENTED   = YES
+WARN_NO_PARAMDOC       = NO
+GENERATE_HTML          = YES
+GENERATE_LATEX         = NO
+SOURCE_BROWSER         = YES
+HAVE_DOT               = NO
+QUIET                  = YES
+EXCLUDE_SYMBOLS        = wxDECLARE_APP wxIMPLEMENT_APP wxDECLARE_EVENT wxDEFINE_EVENT
