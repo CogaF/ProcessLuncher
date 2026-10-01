@@ -46,14 +46,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_DLL|x64'" Label="Configuration">
@@ -65,21 +64,21 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_DLL|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_DLL|Win32'" Label="Configuration">
@@ -91,7 +90,8 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_DLL|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
@@ -99,32 +99,47 @@
   <ImportGroup Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-  <PropertyGroup Label="UserMacros">
-    <!-- Application name = exe name (the window title is set in MainWindow.cpp). -->
-    <AppExeBaseName>Process Launcher</AppExeBaseName>
-    <!-- Dependencies (see DEPENDENCIES.md): only wxWidgets, found through the environment variable WXWIN.
-         Override WxLibDir in a Directory.Build.props or on the msbuild command line (/p:WxLibDir=...)
-         if your folders are laid out differently. -->
-    <WxArchSuffix Condition="'$(Platform)'=='x64'">_x64</WxArchSuffix>
-    <WxArchSuffix Condition="'$(Platform)'!='x64'"></WxArchSuffix>
-    <WxLinkKind Condition="$(Configuration.EndsWith('_DLL'))">dll</WxLinkKind>
-    <WxLinkKind Condition="!$(Configuration.EndsWith('_DLL'))">lib</WxLinkKind>
-    <WxLibDir Condition="'$(WxLibDir)'==''">$(WXWIN)\lib\vc$(WxArchSuffix)_$(WxLinkKind)</WxLibDir>
-    <DepConfig Condition="$(Configuration.StartsWith('Debug'))">Debug</DepConfig>
-    <DepConfig Condition="!$(Configuration.StartsWith('Debug'))">Release</DepConfig>
-    <!-- Only the wxWidgets DLLs of this configuration are copied: wxbase33ud_vc_x64_custom.dll (debug),
-         wxbase33u_vc_x64_custom.dll (release). -->
-    <WxDllPattern Condition="'$(DepConfig)'=='Debug'">wx*ud_*.dll</WxDllPattern>
-    <WxDllPattern Condition="'$(DepConfig)'!='Debug'">wx*u_*.dll</WxDllPattern>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_DLL|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LibraryPath>$(WXWIN)\lib\vc_lib;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</LibraryPath>
+    <IntDir>Outputs\$(Platform)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)\Builds\$(Platform)\$(Configuration)\</OutDir>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)include</IncludePath>
   </PropertyGroup>
-  <PropertyGroup>
-    <TargetName>$(AppExeBaseName)</TargetName>
-    <OutDir>$(SolutionDir)Builds\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>obj\$(Platform)\$(Configuration)\</IntDir>
-    <LibraryPath>$(WxLibDir);$(LibraryPath)</LibraryPath>
-    <LocalDebuggerWorkingDirectory>$(OutDir)</LocalDebuggerWorkingDirectory>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LibraryPath>$(WXWIN)\lib\vc_lib;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</LibraryPath>
+    <OutDir>$(SolutionDir)\Builds\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>Outputs\$(Platform)\$(Configuration)\</IntDir>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)include</IncludePath>
   </PropertyGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_DLL|Win32'">
+    <LibraryPath>$(WXWIN)\lib\vc_dll;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</LibraryPath>
+    <OutDir>$(SolutionDir)\Builds\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>Outputs\$(Platform)\$(Configuration)\</IntDir>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)include</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LibraryPath>$(WXWIN)\lib\vc_x64_lib;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
+    <OutDir>$(SolutionDir)\Builds\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>Outputs\$(Platform)\$(Configuration)\</IntDir>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)include</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LibraryPath>$(WXWIN)\lib\vc_x64_lib;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
+    <OutDir>$(SolutionDir)\Builds\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>Outputs\$(Platform)\$(Configuration)\</IntDir>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)include</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_DLL|x64'">
+    <LibraryPath>$(WXWIN)\lib\vc_x64_dll;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
+    <OutDir>$(SolutionDir)\Builds\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>Outputs\$(Platform)\$(Configuration)\</IntDir>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)include</IncludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
@@ -249,12 +264,7 @@ if exist "$(WxLibDir)\$(WxDllPattern)" xcopy /y /d "$(WxLibDir)\$(WxDllPattern)"
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <!-- wxWidgets libraries are linked automatically by wx/msw/setup.h (include\msvc). -->
-      <AdditionalDependencies>comctl32.lib;rpcrt4.lib;ws2_32.lib;uxtheme.lib;oleacc.lib;winmm.lib;shlwapi.lib;version.lib;advapi32.lib;user32.lib;gdi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
-      <!-- The linker writes the manifest (wx.rc's own is switched off with wxUSE_NO_MANIFEST=1, or
-           the two would clash): themed common controls v6 + per-monitor DPI awareness. -->
-      <AdditionalManifestDependencies>type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*';%(AdditionalManifestDependencies)</AdditionalManifestDependencies>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Manifest>
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
@@ -395,12 +405,7 @@ if exist "$(WxLibDir)\$(WxDllPattern)" xcopy /y /d "$(WxLibDir)\$(WxDllPattern)"
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <!-- wxWidgets libraries are linked automatically by wx/msw/setup.h (include\msvc). -->
-      <AdditionalDependencies>comctl32.lib;rpcrt4.lib;ws2_32.lib;uxtheme.lib;oleacc.lib;winmm.lib;shlwapi.lib;version.lib;advapi32.lib;user32.lib;gdi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
-      <!-- The linker writes the manifest (wx.rc's own is switched off with wxUSE_NO_MANIFEST=1, or
-           the two would clash): themed common controls v6 + per-monitor DPI awareness. -->
-      <AdditionalManifestDependencies>type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*';%(AdditionalManifestDependencies)</AdditionalManifestDependencies>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Manifest>
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
