@@ -30,6 +30,7 @@
 
 /*! \brief Verification keys; the entry with a null id ends the list. */
 inline constexpr License::PublicKeyEntry kLicensePublicKeys[] = {
+	{ "processluncher-2026a", "eb2bd2679006a61f14615d05e7cafee978de626faca7b9cfc84d6787acd6d2fb" },
 	// licgen:public-keys
 	{ nullptr, nullptr }
 };

@@ -58,7 +58,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_DLL|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_DLL|x64'" Label="Configuration">
@@ -115,6 +115,12 @@
     <IntDir>Outputs\$(Platform)\$(Configuration)\</IntDir>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)include</IncludePath>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_DLL|Win32'">
+    <LibraryPath>$(WXWIN)\lib\vc_dll;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</LibraryPath>
+    <OutDir>$(SolutionDir)\Builds\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>Outputs\$(Platform)\$(Configuration)\</IntDir>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)include</IncludePath>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_DLL|Win32'">
     <LibraryPath>$(WXWIN)\lib\vc_dll;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</LibraryPath>
     <OutDir>$(SolutionDir)\Builds\$(Platform)\$(Configuration)\</OutDir>
@@ -133,13 +139,19 @@
     <IntDir>Outputs\$(Platform)\$(Configuration)\</IntDir>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)include</IncludePath>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_DLL|x64'">
+    <LibraryPath>$(WXWIN)\lib\vc_x64_dll;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
+    <OutDir>$(SolutionDir)\Builds\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>Outputs\$(Platform)\$(Configuration)\</IntDir>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)include</IncludePath>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_DLL|x64'">
     <LibraryPath>$(WXWIN)\lib\vc_x64_dll;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
     <OutDir>$(SolutionDir)\Builds\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>Outputs\$(Platform)\$(Configuration)\</IntDir>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)include</IncludePath>
   </PropertyGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
@@ -242,7 +254,8 @@ xcopy /y /d /s "$(ProjectDir)bat_examples\*" "$(OutDir)bat_examples\"</Command>
     <PostBuildEvent>
       <Command>if not exist "$(OutDir)bat_examples\" mkdir "$(OutDir)bat_examples"
 xcopy /y /d /s "$(ProjectDir)bat_examples\*" "$(OutDir)bat_examples\"
-if exist "$(WxLibDir)\$(WxDllPattern)" xcopy /y /d "$(WxLibDir)\$(WxDllPattern)" "$(OutDir)"</Command>
+xcopy /y /d "$(WXWIN)\lib\vc_x64_dll\wxbase333ud_vc*_custom.dll" "$(OutDir)"
+xcopy /y /d "$(WXWIN)\lib\vc_x64_dll\wxmsw333ud_core_vc*_custom.dll" "$(OutDir)"</Command>
       <Message>Copying the example batch files and the wxWidgets DLLs next to the exe</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -276,7 +289,8 @@ if exist "$(WxLibDir)\$(WxDllPattern)" xcopy /y /d "$(WxLibDir)\$(WxDllPattern)"
     <PostBuildEvent>
       <Command>if not exist "$(OutDir)bat_examples\" mkdir "$(OutDir)bat_examples"
 xcopy /y /d /s "$(ProjectDir)bat_examples\*" "$(OutDir)bat_examples\"
-if exist "$(WxLibDir)\$(WxDllPattern)" xcopy /y /d "$(WxLibDir)\$(WxDllPattern)" "$(OutDir)"</Command>
+xcopy /y /d "$(WXWIN)\lib\vc_x64_dll\wxbase333u_vc*_custom.dll" "$(OutDir)"
+xcopy /y /d "$(WXWIN)\lib\vc_x64_dll\wxmsw333u_core_vc*_custom.dll" "$(OutDir)"</Command>
       <Message>Copying the example batch files and the wxWidgets DLLs next to the exe</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -383,7 +397,8 @@ xcopy /y /d /s "$(ProjectDir)bat_examples\*" "$(OutDir)bat_examples\"</Command>
     <PostBuildEvent>
       <Command>if not exist "$(OutDir)bat_examples\" mkdir "$(OutDir)bat_examples"
 xcopy /y /d /s "$(ProjectDir)bat_examples\*" "$(OutDir)bat_examples\"
-if exist "$(WxLibDir)\$(WxDllPattern)" xcopy /y /d "$(WxLibDir)\$(WxDllPattern)" "$(OutDir)"</Command>
+xcopy /y /d "$(WXWIN)\lib\vc_dll\wxbase333ud_vc*_custom.dll" "$(OutDir)"
+xcopy /y /d "$(WXWIN)\lib\vc_dll\wxmsw333ud_core_vc*_custom.dll" "$(OutDir)"</Command>
       <Message>Copying the example batch files and the wxWidgets DLLs next to the exe</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -417,7 +432,8 @@ if exist "$(WxLibDir)\$(WxDllPattern)" xcopy /y /d "$(WxLibDir)\$(WxDllPattern)"
     <PostBuildEvent>
       <Command>if not exist "$(OutDir)bat_examples\" mkdir "$(OutDir)bat_examples"
 xcopy /y /d /s "$(ProjectDir)bat_examples\*" "$(OutDir)bat_examples\"
-if exist "$(WxLibDir)\$(WxDllPattern)" xcopy /y /d "$(WxLibDir)\$(WxDllPattern)" "$(OutDir)"</Command>
+xcopy /y /d "$(WXWIN)\lib\vc_dll\wxbase333u_vc*_custom.dll" "$(OutDir)"
+xcopy /y /d "$(WXWIN)\lib\vc_dll\wxmsw333u_core_vc*_custom.dll" "$(OutDir)"</Command>
       <Message>Copying the example batch files and the wxWidgets DLLs next to the exe</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>

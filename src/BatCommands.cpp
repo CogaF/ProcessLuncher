@@ -443,13 +443,13 @@ const std::vector<BatCommand>& all()
     return kCommands;
 }
 
-const std::vector<wxString>& categories()
+const wxArrayString& categories()
 {
-    static const std::vector<wxString> names = [] {
-        std::vector<wxString> n;
+    static const wxArrayString names = [] {
+        wxArrayString n;
         for (const BatCommand& c : kCommands) {
             const wxString cat = wxString::FromUTF8(c.category);
-            if (std::find(n.begin(), n.end(), cat) == n.end()) n.push_back(cat);
+            if (n.Index(cat) == wxNOT_FOUND) n.Add(cat);
         }
         return n;
     }();

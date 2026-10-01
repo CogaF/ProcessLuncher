@@ -9,6 +9,7 @@
 
 #include <vector>
 
+#include <wx/arrstr.h>
 #include <wx/button.h>
 #include <wx/frame.h>
 #include <wx/scrolwin.h>
@@ -103,7 +104,7 @@ private:
     wxStaticText*     m_sizeLabel = nullptr;  /*!< shows the text size in the toolbar. */
     wxTimer           m_timer;                /*!< delays the highlighting after typing. */
     std::vector<PaneItem> m_items;            /*!< buttons and labels of the pane. */
-    std::vector<wxString> m_categoryNames;    /*!< names of the categories. */
+    wxArrayString m_categoryNames;           /*!< names of the categories. */
 
     wxString m_path;            /*!< file being edited, empty if unnamed. */
     bool     m_dirty = false;   /*!< the text was changed since the last save. */
