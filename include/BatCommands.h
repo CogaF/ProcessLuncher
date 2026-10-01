@@ -12,6 +12,7 @@
 
 #include <vector>
 
+#include <wx/arrstr.h>
 #include <wx/string.h>
 
 /*! \brief One batch command, operator or snippet of the reference. */
@@ -31,7 +32,7 @@ namespace BatCommands
     /*! \brief Every entry, grouped by category in the order they are listed. */
     const std::vector<BatCommand>& all();
     /*! \brief The category names in display order. */
-    const std::vector<wxString>& categories();
+    const wxArrayString& categories();
     /*! \brief true if \p word (any case) is a built-in command or a common console tool. */
     bool isCommand(const wxString& word);
     /*! \brief true if \p word (any case) is flow control (if, else, for, goto, call, exit, not, exist...). */
