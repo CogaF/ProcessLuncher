@@ -396,3 +396,19 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# Process Launcher build output (see the .vcxproj) and Doxygen output
+Builds/
+obj/
+Outputs/
+docs/
+
+# License issuing: the encrypted signing key(s) and the ledger of issued licenses - NEVER commit
+privateData/
+# Per-PC license files, requests and trial state
+*.lic
+license-request.txt
+license-state.dat
+# Written next to the exe while debugging
+result.txt
+Process Launcher data/
