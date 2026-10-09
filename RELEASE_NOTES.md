@@ -34,6 +34,10 @@ other, analyses the output (or a result file) and records **PASS** / **FAIL**.
 - Answering *No* to "launch all the not running commands?" left the rows locked.
 - The "previous failure" question of a *Single* command looked only at the row above; it now names every
   earlier row that failed.
+- Batch editor: a file is saved in the encoding it was read in. Files were read in the ANSI code page and
+  always saved in UTF-8, so accented letters (in paths, `echo` texts) changed and cmd.exe, which reads
+  batch files in the OEM code page, could no longer find the paths. New files use the OEM code page; text
+  it cannot hold is saved in UTF-8 with a warning (add `chcp 65001 >nul`). A UTF-8 byte order mark is kept.
 - The default first row looks for `:File:::[01_minimal_pass_fail] PASS`, so a PASS written by another
   command running at the same time is not counted for it.
 

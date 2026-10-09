@@ -72,7 +72,10 @@ private:
     bool Save();
     /*! \brief Asks for a file name and saves. \return true if saved. */
     bool SaveAs();
-    /*! \brief Writes the text to \p path (Windows line ends, as cmd.exe expects). \return true on success. */
+    /*!
+     * \brief Writes the text to \p path (Windows line ends, as cmd.exe expects) in the encoding it was
+     * read in; text the OEM code page cannot hold is written in UTF-8 (the operator is told). \return true on success.
+     */
     bool WriteFile(const wxString& path);
     /*! \brief Updates the window title (file name, * when modified) and the status bar. */
     void UpdateTitle();
@@ -108,6 +111,8 @@ private:
 
     wxString m_path;            /*!< file being edited, empty if unnamed. */
     bool     m_dirty = false;   /*!< the text was changed since the last save. */
+    bool     m_utf8 = false;    /*!< the file is UTF-8; false: OEM code page, as cmd.exe reads it. */
+    bool     m_utf8Bom = false; /*!< the UTF-8 file starts with a byte order mark (kept when saving). */
     bool     m_busy = false;    /*!< the code itself is changing the text or its style. */
     int      m_fontSize = 11;   /*!< text size in points. */
 };

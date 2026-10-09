@@ -11,7 +11,9 @@
 #include <wx/filedlg.h>
 #include <wx/filename.h>
 #include <wx/msgdlg.h>
+#include <wx/msw/wrapwin.h>
 #include <wx/panel.h>
+#include <wx/strconv.h>
 #include <wx/tooltip.h>
 
 #include "AppInfo.h"
@@ -20,6 +22,15 @@
 #include "DataDir.h"
 
 namespace {
+
+/*! \brief The byte order mark some editors put at the start of a UTF-8 file. */
+constexpr char kUtf8Bom[] = "\xEF\xBB\xBF";
+
+/*! \brief The OEM code page of the system: the one cmd.exe reads batch files in (unless "chcp" changes it). */
+wxCSConv oemConv()
+{
+    return wxCSConv(wxString::Format("CP%u", static_cast<unsigned>(GetOEMCP())));
+}
 
 /*! \brief Identifiers of the toolbar buttons. */
 enum
@@ -415,10 +426,19 @@ bool BatchEditorFrame::LoadFile(const wxString& path)
         wxMessageBox(wxString::Format("Cannot read %s", path), "Batch file editor", wxOK | wxICON_ERROR, this);
         return false;
     }
-    // Batch files are usually ANSI / OEM, sometimes UTF-8: try UTF-8 first, then the local code page.
+    // cmd.exe reads batch files in the OEM code page; some are UTF-8 (with "chcp 65001"). A file that is
+    // valid UTF-8 and has non-ASCII characters is kept UTF-8, every other one is read and written in
+    // the OEM code page, so saving never changes the bytes of the characters that were not edited.
+    m_utf8Bom = bytes.compare(0, 3, kUtf8Bom) == 0;
+    if (m_utf8Bom) bytes.erase(0, 3);
+    const bool ascii = std::all_of(bytes.begin(), bytes.end(), [](char c) { return static_cast<unsigned char>(c) < 0x80; });
     wxString text = wxString::FromUTF8(bytes.data(), bytes.size());
-    if (text.empty() && !bytes.empty()) text = wxString(bytes.data(), wxConvLocal, bytes.size());
-    if (text.empty() && !bytes.empty()) text = wxString::From8BitData(bytes.data(), bytes.size());
+    m_utf8 = m_utf8Bom || (!ascii && !text.empty());
+    if (!m_utf8) {
+        const wxCSConv oem = oemConv();
+        text = oem.IsOk() ? wxString(bytes.data(), oem, bytes.size()) : wxString();
+        if (text.empty() && !bytes.empty()) text = wxString::From8BitData(bytes.data(), bytes.size());
+    }
     text.Replace("\r\n", "\n"); // the control works with \n, WriteFile() puts \r\n back
 
     m_busy = true;
@@ -440,9 +460,30 @@ bool BatchEditorFrame::WriteFile(const wxString& path)
     wxString text = m_text->GetValue();
     text.Replace("\r\n", "\n"); // never double a CR
     text.Replace("\n", "\r\n"); // cmd.exe needs CRLF: labels and goto can fail with bare LF
-    const wxScopedCharBuffer utf8 = text.utf8_str();
+
+    std::string bytes;
+    if (!m_utf8) { // the encoding the file was read in (see LoadFile())
+        const wxCSConv oem = oemConv();
+        wxScopedCharBuffer encoded;
+        if (oem.IsOk()) encoded = text.mb_str(oem);
+        if (encoded.length() > 0 || text.empty()) {
+            bytes.assign(encoded.data(), encoded.length());
+        }
+        else {
+            m_utf8 = true;
+            wxMessageBox(wxString::Format("Some characters cannot be written in the code page used by cmd.exe (CP%u):\n"
+                                          "the file is saved in UTF-8. Put \"chcp 65001 >nul\" at its top so cmd.exe reads them right.",
+                                          static_cast<unsigned>(GetOEMCP())),
+                         "Batch file editor", wxOK | wxICON_WARNING, this);
+        }
+    }
+    if (m_utf8) {
+        const wxScopedCharBuffer utf8 = text.utf8_str();
+        if (m_utf8Bom) bytes = kUtf8Bom;
+        bytes.append(utf8.data(), utf8.length());
+    }
     wxFile file(path, wxFile::write);
-    return file.IsOpened() && file.Write(utf8.data(), utf8.length()) == utf8.length();
+    return file.IsOpened() && file.Write(bytes.data(), bytes.size()) == bytes.size();
 }
 
 bool BatchEditorFrame::Save()
@@ -482,6 +523,8 @@ void BatchEditorFrame::OnNew(wxCommandEvent&)
     m_text->SetValue(newFileTemplate());
     m_busy = false;
     m_path.clear();
+    m_utf8 = false;
+    m_utf8Bom = false;
     m_dirty = false;
     ApplyBaseStyle();
     Rehighlight();
