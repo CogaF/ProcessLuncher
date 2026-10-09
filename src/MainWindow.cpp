@@ -740,7 +740,8 @@ void MainWindow::StartThread(const wxString& input, int commandIndex)
         outcome.exitCode = run.exitCode;
         outcome.durationMs = run.durationMs;
         wxString missingResultFile;
-        outcome.pass = ResultCheck::evaluate(expected, outcome.output, resultFile, resultFileOffset, outcome.note, missingResultFile);
+        outcome.pass = ResultCheck::evaluate(expected, outcome.output, run.exitCode, commandIndex + 1, resultFile, resultFileOffset,
+                                             outcome.note, missingResultFile);
         if (run.timedOut || run.stopped) {
             outcome.pass = false; // a terminated command never passes
             outcome.note = run.timedOut ? wxString::Format("CMD %d terminated: time limit of %ld s expired", commandIndex + 1, timeoutMs / 1000)

@@ -10,7 +10,8 @@ Each row of the table is one command:
 | ON / OFF | whether "Run command(s)" starts it |
 | Run | starts only this command |
 | command | anything `cmd /c` understands (a `.bat` file, `ping ...`, ...) |
-| expected result | text that must appear in the output of the command, or `:File:<path>::<text>` to look for `<text>` in a file (for commands that write their result to a file instead of the console) |
+| expected result | text that must appear in the output of the command, `:File:<path>::<text>` to look for `<text>` in a file (for commands that write their result to a file instead of the console), or `:Exit:<codes>` for the exit code (`:Exit:0`, `:Exit:0-7,16`); `{id}` is replaced by the row number |
+| time limit | seconds after which a running command is terminated and counted FAIL (0 = none) |
 | counters | how many times the command passed / failed |
 | Parallel / Single | *Parallel* commands start at once; a *Single* command starts alone and "Run command(s)" waits for it (Settings > Stop waiting, Ctrl-B, releases it) |
 | Busy / Ready | the command is running / idle |

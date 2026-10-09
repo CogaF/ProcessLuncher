@@ -5,17 +5,57 @@
 
 #include "ResultCheck.h"
 
+#include <wx/arrstr.h>
 #include <wx/filename.h>
+
+#include <algorithm>
 #include <wx/utils.h>
 #include <wx/wfstream.h>
 #include <wx/txtstrm.h>
 
 namespace ResultCheck {
 
+wxString expandId(const wxString& expected, int commandId)
+{
+    wxString text = expected;
+    text.Replace(kIdPlaceholder, wxString::Format("%d", commandId));
+    return text;
+}
+
+/*! \brief Reads "0", "0-7", "0,3,10-12" into ranges. \return false if a part is not a number or a range. */
+static bool parseExitCodes(const wxString& list, std::vector<std::pair<long, long>>& ranges)
+{
+    for (wxString part : wxSplit(list, ',')) {
+        part.Trim().Trim(false);
+        // a '-' after the first character separates a range (the first may be the sign of a number)
+        const size_t dash = part.find('-', 1);
+        long from = 0, to = 0;
+        if (dash == wxString::npos) {
+            if (!part.ToLong(&from)) return false;
+            to = from;
+        }
+        else {
+            wxString a = part.Left(dash), b = part.Mid(dash + 1);
+            a.Trim().Trim(false);
+            b.Trim().Trim(false);
+            if (!a.ToLong(&from) || !b.ToLong(&to) || to < from) return false;
+        }
+        ranges.emplace_back(from, to);
+    }
+    return !ranges.empty();
+}
+
 Spec parse(const wxString& expected)
 {
     Spec spec;
     spec.text = expected;
+    wxString trimmed = expected;
+    trimmed.Trim(false);
+    if (trimmed.StartsWith(kExitTag)) {
+        spec.isExit = true;
+        spec.valid = parseExitCodes(trimmed.Mid(kExitTag.length()), spec.exitCodes);
+        return spec;
+    }
     const int tagPos = expected.Find(kFileTag);
     if (tagPos == wxNOT_FOUND) return spec; // plain text
 
@@ -63,10 +103,20 @@ bool findInFile(const wxString& path, const wxString& text, wxFileOffset startOf
     return false;
 }
 
-bool evaluate(const wxString& expected, const wxString& output, const wxString& resultFile,
-              wxFileOffset resultFileOffset, wxString& note, wxString& missingResultFile)
+bool evaluate(const wxString& expectedField, const wxString& output, long exitCode, int commandId,
+              const wxString& resultFile, wxFileOffset resultFileOffset, wxString& note, wxString& missingResultFile)
 {
+    const wxString expected = expandId(expectedField, commandId);
     const Spec spec = parse(expected);
+    if (spec.isExit) {
+        if (!spec.valid) {
+            note = wxString::Format("Expected result \"%s\" is not of the form %s<codes>, e.g. %s0 or %s0-7,16",
+                                    expected, kExitTag, kExitTag, kExitTag);
+            return false;
+        }
+        return std::any_of(spec.exitCodes.begin(), spec.exitCodes.end(),
+                           [exitCode](const std::pair<long, long>& r) { return exitCode >= r.first && exitCode <= r.second; });
+    }
     if (!spec.isFile) return output.Contains(expected);
 
     if (!spec.valid) {

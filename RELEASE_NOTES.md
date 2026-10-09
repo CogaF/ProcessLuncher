@@ -29,6 +29,9 @@ other, analyses the output (or a result file) and records **PASS** / **FAIL**.
 - Each command gets `PCR_CMD_ID` (its row number) besides `PCR_RESULT_FILE` and `PCR_APP_DIR`, in its own
   environment.
 - The result list shows the exit code and the duration of every run.
+- Expected result `:Exit:<codes>`: PASS when the exit code is in the list, e.g. `:Exit:0`, `:Exit:0-7,16`.
+- `{id}` in an expected result is replaced by the row number: `:File:::[test#{id}] PASS` tells apart rows
+  running the same batch file in parallel (the batch file writes `[%~n0#%PCR_CMD_ID%]`).
 
 **Changed**
 - Contact e-mail: coga.fation@gmail.com (About window, manual).

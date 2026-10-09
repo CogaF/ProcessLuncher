@@ -70,18 +70,34 @@ int main(int argc, char** argv)
     const wxString path = wxFileName::GetTempDir() + wxFileName::GetPathSeparator() + "pcr_selftest_result.txt";
     removeIfExists(path);
     wxString note, missing;
-    check(!ResultCheck::evaluate(":File:::PASS", "", path, 0, note, missing) && missing == path, "missing result file reported");
+    check(!ResultCheck::evaluate(":File:::PASS", "", 0, 1, path, 0, note, missing) && missing == path, "missing result file reported");
     writeFile(path, "2026-01-01 00:00:00 old PASS\n");
     const wxFileOffset offset = ResultCheck::fileSize(path);
     note.clear(); missing.clear();
-    check(ResultCheck::evaluate(":File:::PASS", "", path, 0, note, missing), "old PASS found when searching the whole file");
-    check(!ResultCheck::evaluate(":File:::PASS", "", path, offset, note, missing), "old PASS ignored after the start offset");
+    check(ResultCheck::evaluate(":File:::PASS", "", 0, 1, path, 0, note, missing), "old PASS found when searching the whole file");
+    check(!ResultCheck::evaluate(":File:::PASS", "", 0, 1, path, offset, note, missing), "old PASS ignored after the start offset");
     { wxFFile f(path, "ab"); f.Write("2026-01-01 00:00:01 new PASS\n"); }
-    check(ResultCheck::evaluate(":File:::PASS", "", path, offset, note, missing), "new PASS found after the start offset");
-    check(ResultCheck::evaluate(":File:" + path + "::old", "", "unused", offset, note, missing), "explicit path searches the whole file");
-    check(ResultCheck::evaluate("hello", "say hello there", path, 0, note, missing), "plain text found in output");
-    check(!ResultCheck::evaluate("bye", "say hello there", path, 0, note, missing), "plain text not found in output");
+    check(ResultCheck::evaluate(":File:::PASS", "", 0, 1, path, offset, note, missing), "new PASS found after the start offset");
+    check(ResultCheck::evaluate(":File:" + path + "::old", "", 0, 1, "unused", offset, note, missing), "explicit path searches the whole file");
+    check(ResultCheck::evaluate("hello", "say hello there", 0, 1, path, 0, note, missing), "plain text found in output");
+    check(!ResultCheck::evaluate("bye", "say hello there", 0, 1, path, 0, note, missing), "plain text not found in output");
+    // {id}: the row number
+    { wxFFile f(path, "ab"); f.Write("2026-01-01 00:00:02 [t#3] PASS\n"); }
+    check(ResultCheck::evaluate(":File:::[t#{id}] PASS", "", 0, 3, path, offset, note, missing), "{id} replaced by the row number");
+    check(!ResultCheck::evaluate(":File:::[t#{id}] PASS", "", 0, 2, path, offset, note, missing), "{id} of another row not found");
     removeIfExists(path);
+
+    // --- exit codes
+    check(ResultCheck::parse(":Exit:0").isExit && ResultCheck::parse(":Exit:0").valid, ":Exit:0 parsed");
+    check(!ResultCheck::parse(":Exit:abc").valid && !ResultCheck::parse(":Exit:").valid && !ResultCheck::parse(":Exit:5-2").valid, "bad exit codes");
+    check(ResultCheck::evaluate(":Exit:0", "FAIL", 0, 1, path, 0, note, missing), "exit 0 passes whatever the output");
+    check(!ResultCheck::evaluate(":Exit:0", "PASS", 1, 1, path, 0, note, missing), "exit 1 fails :Exit:0");
+    check(ResultCheck::evaluate(":Exit:0-7, 16", "", 7, 1, path, 0, note, missing), "range upper bound");
+    check(ResultCheck::evaluate(":Exit:0-7, 16", "", 16, 1, path, 0, note, missing), "single code in a list");
+    check(!ResultCheck::evaluate(":Exit:0-7, 16", "", 8, 1, path, 0, note, missing), "code outside the list");
+    check(ResultCheck::evaluate(":Exit:-1", "", -1, 1, path, 0, note, missing), "negative code");
+    note.clear();
+    check(!ResultCheck::evaluate(":Exit:x", "", 0, 1, path, 0, note, missing) && !note.empty(), "malformed exit spec reported");
 
     // --- BatHighlighter
     const wxString bat =
