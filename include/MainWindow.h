@@ -24,6 +24,7 @@
 #include <vector>
 
 #include "Id.h"
+#include "Project.h"
 #include "cmdgui.h"
 
 /*! \brief Number of command rows shown in the main window. */
@@ -105,6 +106,12 @@ private:
     void OnNewBatch(wxCommandEvent& event);
     /*! \brief Menu File > Open batch file: opens the editor on a chosen file. */
     void OnOpenBatch(wxCommandEvent& event);
+    /*! \brief Menu File > Open project. */
+    void OnOpenProject(wxCommandEvent& event);
+    /*! \brief Menu File > Save project. */
+    void OnSaveProject(wxCommandEvent& event);
+    /*! \brief Menu File > Save project as. */
+    void OnSaveProjectAs(wxCommandEvent& event);
     /*! \brief Menu File > Open examples folder. */
     void OnOpenExamples(wxCommandEvent& event);
     /*! \brief Menu Settings > Open data folder. */
@@ -218,6 +225,24 @@ private:
     /*! \brief \return true if the expected result of row \p commandIndex refers to the result file. */
     bool UsesResultFile(int commandIndex);
 
+    // --- project ----------------------------------------------------------------------------
+    /*! \brief \return the project used when none was chosen: commands.pcr in the data folder. */
+    static wxString DefaultProjectFile();
+    /*! \brief \return the rows, the result file and the repeat count as they are now. */
+    Project::Data CollectProject();
+    /*! \brief Puts \p data in the rows (rows missing from it become empty and OFF). */
+    void ApplyProject(const Project::Data& data);
+    /*!
+     * \brief Reads a project file into the rows and makes it the current one.
+     * \param path the file. \param quiet true: a problem goes only to the log and the result list.
+     * \return false if it could not be read (the rows are unchanged).
+     */
+    bool LoadProject(const wxString& path, bool quiet);
+    /*! \brief Writes the rows to \p path and makes it the current project. \param quiet as in LoadProject(). */
+    bool SaveProject(const wxString& path, bool quiet);
+    /*! \brief Shows the project name in the window title. */
+    void UpdateTitle();
+
     // --- license ----------------------------------------------------------------------------
     /*!
      * \brief Checks that a feature is licensed; if not, says why and offers the License window.
@@ -242,6 +267,8 @@ private:
     std::shared_ptr<EventSink> m_sink = std::make_shared<EventSink>(); /*!< shared with the workers. */
 
     bool  m_askingResultFile = false;   /*!< the "result file does not exist" question is open. */
+    wxString m_projectPath;             /*!< the current project file (saved on close and at every run). */
+    int   m_repeat = 1;                 /*!< how many times Run command(s) runs the rows, 0 = until stopped. */
     wxTimer m_licenseTimer;             /*!< re-checks the license dates. */
 
     wxTextCtrl* m_resultFileTxt = nullptr; /*!< shows (and edits) the full path of the result file. */

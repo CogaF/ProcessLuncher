@@ -69,6 +69,10 @@ MainWindow::MainWindow()
     auto* menuFile = new wxMenu;
     menuFile->Append(windowIDs::ID_NEW_BATCH, "&New batch file\tCtrl-N", "Open the batch file editor with a PASS / FAIL skeleton");
     menuFile->Append(windowIDs::ID_OPEN_BATCH, "&Open batch file...\tCtrl-O", "View and edit a batch file, with a reference of the batch commands");
+    menuFile->Append(windowIDs::ID_OPEN_PROJECT, "Open p&roject...", "Open a project file: the command rows, the result file, the repeat count");
+    menuFile->Append(windowIDs::ID_SAVE_PROJECT, "&Save project\tCtrl-S", "Save the command rows in the current project file");
+    menuFile->Append(windowIDs::ID_SAVE_PROJECT_AS, "Save project &as...", "Save the command rows in another project file");
+    menuFile->AppendSeparator();
     menuFile->Append(windowIDs::ID_OPEN_EXAMPLES, "Open &examples folder", "Open the folder with the example batch files");
     menuFile->AppendSeparator();
     menuFile->Append(wxID_EXIT);
@@ -138,6 +142,12 @@ MainWindow::MainWindow()
     m_resultList->InsertColumn(0, "Timestamp");
     m_resultList->InsertColumn(1, "Information");
 
+    // The rows of the last session (or of the project chosen last time); needs the result list for its messages.
+    m_projectPath = AppSettings::getString("projectFile", DefaultProjectFile());
+    if (!wxFileExists(m_projectPath)) m_projectPath = DefaultProjectFile(); // the project chosen last time is gone
+    if (wxFileExists(m_projectPath)) LoadProject(m_projectPath, true);
+    UpdateTitle();
+
     // --- layout ------------------------------------------------------------------------------
     auto* componentsSizer = new wxBoxSizer(wxVERTICAL);
     componentsSizer->Add(m_runBT, 0, wxEXPAND | wxALL, 1);
@@ -156,6 +166,9 @@ MainWindow::MainWindow()
     Bind(wxEVT_MENU, &MainWindow::OnNewBatch, this, windowIDs::ID_NEW_BATCH);
     Bind(wxEVT_MENU, &MainWindow::OnOpenBatch, this, windowIDs::ID_OPEN_BATCH);
     Bind(wxEVT_MENU, &MainWindow::OnOpenExamples, this, windowIDs::ID_OPEN_EXAMPLES);
+    Bind(wxEVT_MENU, &MainWindow::OnOpenProject, this, windowIDs::ID_OPEN_PROJECT);
+    Bind(wxEVT_MENU, &MainWindow::OnSaveProject, this, windowIDs::ID_SAVE_PROJECT);
+    Bind(wxEVT_MENU, &MainWindow::OnSaveProjectAs, this, windowIDs::ID_SAVE_PROJECT_AS);
     Bind(wxEVT_MENU, &MainWindow::OnOpenDataFolder, this, windowIDs::ID_OPEN_DATA_FOLDER);
     Bind(wxEVT_MENU, &MainWindow::OnOpenResultFile, this, windowIDs::ID_OPEN_RESULT_FILE);
     Bind(wxEVT_MENU, &MainWindow::OnSelectResultFile, this, windowIDs::ID_SELECT_RESULT_FILE);
@@ -339,6 +352,118 @@ void MainWindow::OnOpenResultFile(wxCommandEvent&)
     const wxString path = ResultFilePath();
     if (!wxFileExists(path) && !EnsureResultFile()) return;
     wxLaunchDefaultApplication(ResultFilePath());
+}
+
+// ------------------------------------------------------------------------------------------------
+// Project
+// ------------------------------------------------------------------------------------------------
+
+wxString MainWindow::DefaultProjectFile()
+{
+    return wxString(DataDir::file(std::string("commands.") + Project::kExtension.utf8_string()).wstring());
+}
+
+Project::Data MainWindow::CollectProject()
+{
+    Project::Data data;
+    data.resultFile = ResultFilePath();
+    data.repeat = m_repeat;
+    for (auto& cmd : m_cmds) {
+        data.rows.push_back({ cmd->isActive(), cmd->isSequential(), cmd->getCmd(), cmd->getPositiveVal(), cmd->getTimeout() });
+    }
+    return data;
+}
+
+void MainWindow::ApplyProject(const Project::Data& data)
+{
+    const bool singleAllowed = Licensing::allows(LicensePolicy::kFeatureSequential);
+    for (size_t i = 0; i < m_cmds.size(); i++) {
+        cmdgui& cmd = *m_cmds[i];
+        const Project::Row row = i < data.rows.size() ? data.rows[i] : Project::Row{ false, false, wxString(), wxString(), 0 };
+        cmd.setCmd(row.command);
+        cmd.setPostVal(row.expected);
+        cmd.setTimeout(row.timeout);
+        cmd.setSequential(row.single && singleAllowed); // without the license feature the row stays Parallel
+        if (row.active) cmd.enable();
+        else cmd.disable();
+        if (m_userEditLock) cmd.disableEditables();
+    }
+    if (data.rows.size() > m_cmds.size()) {
+        AddMessage(get_current_timestamp(), wxString::Format("The project has %d rows, only the first %d are shown",
+                                                             static_cast<int>(data.rows.size()), static_cast<int>(m_cmds.size())), kFailColour);
+    }
+    if (!data.resultFile.empty()) SetResultFile(data.resultFile);
+    m_repeat = data.repeat;
+}
+
+bool MainWindow::LoadProject(const wxString& path, bool quiet)
+{
+    Project::Data data;
+    wxString error;
+    if (!Project::load(path, data, error)) {
+        Log::error(std::string(error.utf8_str()));
+        if (quiet) AddMessage(get_current_timestamp(), error, kFailColour);
+        else wxMessageBox(error, "Open project", wxOK | wxICON_ERROR, this);
+        return false;
+    }
+    ApplyProject(data);
+    m_projectPath = path;
+    AppSettings::set("projectFile", path);
+    UpdateTitle();
+    Log::info("Project: " + std::string(path.utf8_str()));
+    return true;
+}
+
+bool MainWindow::SaveProject(const wxString& path, bool quiet)
+{
+    wxString error;
+    if (!Project::save(path, CollectProject(), error)) {
+        Log::error(std::string(error.utf8_str()));
+        if (quiet) AddMessage(get_current_timestamp(), error, kFailColour);
+        else wxMessageBox(error, "Save project", wxOK | wxICON_ERROR, this);
+        return false;
+    }
+    if (path != m_projectPath) {
+        m_projectPath = path;
+        AppSettings::set("projectFile", path);
+        UpdateTitle();
+    }
+    return true;
+}
+
+void MainWindow::UpdateTitle()
+{
+    SetTitle(wxString::FromUTF8(GetWindowTitle()) + " - " + wxFileName(m_projectPath).GetFullName());
+}
+
+void MainWindow::OnOpenProject(wxCommandEvent&)
+{
+    if (m_runAllInProgress || AnyCommandRunning()) {
+        wxMessageBox("Wait for the commands to end before opening another project.", "Open project", wxOK | wxICON_INFORMATION, this);
+        return;
+    }
+    const wxFileName current(m_projectPath);
+    wxFileDialog dialog(this, "Open project", current.GetPath(), wxString(),
+                        "Process Launcher projects (*.pcr)|*.pcr|All files (*.*)|*.*", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+    if (dialog.ShowModal() != wxID_OK) return;
+    SaveProject(m_projectPath, true); // the rows of the project being left are kept
+    LoadProject(dialog.GetPath(), false);
+}
+
+void MainWindow::OnSaveProject(wxCommandEvent&)
+{
+    if (SaveProject(m_projectPath, false)) AddMessage(get_current_timestamp(), "Project saved: " + m_projectPath);
+}
+
+void MainWindow::OnSaveProjectAs(wxCommandEvent&)
+{
+    const wxFileName current(m_projectPath);
+    wxFileDialog dialog(this, "Save project as", current.GetPath(), current.GetFullName(),
+                        "Process Launcher projects (*.pcr)|*.pcr|All files (*.*)|*.*", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+    if (dialog.ShowModal() != wxID_OK) return;
+    wxString path = dialog.GetPath();
+    if (wxFileName(path).GetExt().empty()) path += "." + Project::kExtension;
+    if (SaveProject(path, false)) AddMessage(get_current_timestamp(), "Project saved: " + path);
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -592,6 +717,7 @@ void MainWindow::OnClose(wxCloseEvent& event)
             return;
         }
     }
+    SaveProject(m_projectPath, true); // the rows are there again at the next start
     m_closing = true;
     m_blocking = false; // releases WaitWhileBlocking()
     {
@@ -675,6 +801,7 @@ void MainWindow::onRunCommand(wxCommandEvent&)
         return;
     }
 
+    SaveProject(m_projectPath, true); // what runs is what is saved
     DisableCmds(); // the commands must not be edited while they run (unlocked again by UnlockWhenIdle())
     m_runAllInProgress = true;
     for (int i = 0; i < kNrOfCmds && !m_closing; i++) {

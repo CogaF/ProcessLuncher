@@ -36,6 +36,9 @@ enum id {
     ID_RESULT_FILE_TXT,               /*!< The text entry that shows the full path of the result file. */
     ID_RESULT_BROWSE_BT,              /*!< The button next to it that chooses another file. */
     ID_LICENSE_TIMER,                 /*!< Timer that re-checks the license dates. */
+    ID_OPEN_PROJECT,                  /*!< Menu File: open a project file (the command rows). */
+    ID_SAVE_PROJECT,                  /*!< Menu File: save the command rows in the project file. */
+    ID_SAVE_PROJECT_AS,               /*!< Menu File: save the command rows in another project file. */
 
     ID_GUI_CLASS = wxID_HIGHEST + 251 /*!< First id of the command rows (see cmdRowBaseId()). */
 };

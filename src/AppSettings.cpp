@@ -17,7 +17,9 @@ namespace {
 std::unique_ptr<wxFileConfig> openConfig()
 {
     const wxString file = wxString(DataDir::file("settings.ini").wstring());
-    return std::make_unique<wxFileConfig>(wxEmptyString, wxEmptyString, file, wxEmptyString, wxCONFIG_USE_LOCAL_FILE);
+    auto config = std::make_unique<wxFileConfig>(wxEmptyString, wxEmptyString, file, wxEmptyString, wxCONFIG_USE_LOCAL_FILE);
+    config->SetExpandEnvVars(false); // a path with %VARIABLES% is kept as typed
+    return config;
 }
 
 } // namespace

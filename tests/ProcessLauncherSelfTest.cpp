@@ -1,10 +1,10 @@
 /*!
  * \file ProcessLauncherSelfTest.cpp
- * \brief Console self-test of the parts without GUI: ResultCheck and BatHighlighter.
+ * \brief Console self-test of the parts without GUI: ResultCheck, Project and BatHighlighter.
  *
  * Build (Visual Studio developer prompt, wxWidgets base only):
  *   cl /EHsc /std:c++20 /utf-8 /DwxUSE_GUI=0 /I include /I %WXWIN%\include /I %WXWIN%\include\msvc
- *      tests\ProcessLauncherSelfTest.cpp src\ResultCheck.cpp src\BatHighlighter.cpp src\BatCommands.cpp
+ *      tests\ProcessLauncherSelfTest.cpp src\ResultCheck.cpp src\BatHighlighter.cpp src\BatCommands.cpp src\Project.cpp
  * On Linux with libwxbase3.2-dev: g++ -std=c++20 -I include $(wx-config --cxxflags base) ... $(wx-config --libs base)
  * Returns 0 if everything passes.
  */
@@ -18,6 +18,7 @@
 
 #include "BatCommands.h"
 #include "BatHighlighter.h"
+#include "Project.h"
 #include "ResultCheck.h"
 
 namespace {
@@ -98,6 +99,29 @@ int main(int argc, char** argv)
     check(ResultCheck::evaluate(":Exit:-1", "", -1, 1, path, 0, note, missing), "negative code");
     note.clear();
     check(!ResultCheck::evaluate(":Exit:x", "", 0, 1, path, 0, note, missing) && !note.empty(), "malformed exit spec reported");
+
+    // --- Project: a round trip keeps every field, %VARIABLES% and special characters
+    {
+        const wxString projectPath = wxFileName::GetTempDir() + wxFileName::GetPathSeparator() + "pcr_selftest.pcr";
+        Project::Data out;
+        out.resultFile = "C:\\Tests\\result.txt";
+        out.repeat = 5;
+        out.rows.push_back({ true, false, "bat_examples\\02_ping_host.bat 10.0.0.1", ":File:::[02_ping_host] PASS", 30 });
+        out.rows.push_back({ false, true, "echo %PCR_RESULT_FILE% ; \"quoted\" = x # y", "  leading space", 0 });
+        wxString error;
+        check(Project::save(projectPath, out, error), "project saved");
+        Project::Data in;
+        check(Project::load(projectPath, in, error), "project loaded");
+        check(in.resultFile == out.resultFile && in.repeat == 5 && in.rows.size() == 2, "project header");
+        check(in.rows.size() == 2 && in.rows[0].command == out.rows[0].command && in.rows[0].expected == out.rows[0].expected &&
+              in.rows[0].timeout == 30 && in.rows[0].active && !in.rows[0].single, "project row 1");
+        check(in.rows.size() == 2 && in.rows[1].command == out.rows[1].command && in.rows[1].expected == out.rows[1].expected &&
+              !in.rows[1].active && in.rows[1].single, "project row 2 (variables, quotes, spaces)");
+        writeFile(projectPath, "just text\n");
+        check(!Project::load(projectPath, in, error) && !error.empty(), "not a project file");
+        removeIfExists(projectPath);
+        check(!Project::load(projectPath, in, error), "missing project file");
+    }
 
     // --- BatHighlighter
     const wxString bat =

@@ -28,6 +28,10 @@ other, analyses the output (or a result file) and records **PASS** / **FAIL**.
 - The Run button of a row becomes **Stop** while its command runs.
 - Each command gets `PCR_CMD_ID` (its row number) besides `PCR_RESULT_FILE` and `PCR_APP_DIR`, in its own
   environment.
+- **The command rows are kept**: they are saved in a project file (`commands.pcr` in the data folder by
+  default) when the window closes and at every "Run command(s)", and loaded at the next start. File >
+  Open project / Save project (Ctrl+S) / Save project as keep several sets of commands; a project also
+  holds the result file and the repeat count.
 - The result list shows the exit code and the duration of every run.
 - Expected result `:Exit:<codes>`: PASS when the exit code is in the list, e.g. `:Exit:0`, `:Exit:0-7,16`.
 - `{id}` in an expected result is replaced by the row number: `:File:::[test#{id}] PASS` tells apart rows

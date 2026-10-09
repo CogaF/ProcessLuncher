@@ -16,6 +16,10 @@ Each row of the table is one command:
 | Parallel / Single | *Parallel* commands start at once; a *Single* command starts alone and "Run command(s)" waits for it (Settings > Stop waiting, Ctrl-B, releases it) |
 | Busy / Ready | the command is running / idle |
 
+The rows are saved in a **project file** (`Process Launcher data\commands.pcr` unless File > Save project as
+chose another) when the window closes and at every run, and come back at the next start; File > Open
+project switches between sets of commands.
+
 While "Run command(s)" runs, the rows are locked; they are unlocked when the last command ends (Settings >
 Disable Edit keeps them locked, Enable Edit unlocks them). Closing the window terminates the unfinished
 commands and everything they started.
