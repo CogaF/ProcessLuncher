@@ -9,6 +9,7 @@
 #include "MainWindow.h"
 
 #include "AboutDialog.h"
+#include "App.h"
 #include "AppInfo.h"
 #include "AppSettings.h"
 #include "CommandRunner.h"
@@ -42,6 +43,7 @@
 #include <wx/file.h>
 
 #include <algorithm>
+#include <cstdio>
 #include <string>
 #include <thread>
 
@@ -56,10 +58,12 @@ const wxColour kFailColour(255, 130, 130);
 
 } // namespace
 
-MainWindow::MainWindow()
+MainWindow::MainWindow(const StartOptions& options)
     : wxFrame(nullptr, wxID_ANY, wxString::FromUTF8(GetWindowTitle())),
-      m_licenseTimer(this, windowIDs::ID_LICENSE_TIMER)
+      m_licenseTimer(this, windowIDs::ID_LICENSE_TIMER),
+      m_options(options)
 {
+    m_unattended = options.run;
     m_sink->target = this;
 
     SetMinSize(FromDIP(wxSize(900, 500)));
@@ -159,7 +163,23 @@ MainWindow::MainWindow()
     // The rows of the last session (or of the project chosen last time); needs the result list for its messages.
     m_projectPath = AppSettings::getString("projectFile", DefaultProjectFile());
     if (!wxFileExists(m_projectPath)) m_projectPath = DefaultProjectFile(); // the project chosen last time is gone
-    if (wxFileExists(m_projectPath)) LoadProject(m_projectPath, true);
+    bool loaded = false;
+    if (!options.projectPath.empty()) {
+        wxFileName given(options.projectPath);
+        given.MakeAbsolute();
+        loaded = LoadProject(given.GetFullPath(), true, !options.run);
+        m_projectLoadFailed = !loaded;
+    }
+    if (!loaded && !options.run && wxFileExists(m_projectPath)) loaded = LoadProject(m_projectPath, true);
+    if (!loaded && !options.run && wxFileExists(m_projectPath)) {
+        // An unreadable project (damaged, or from a newer version) is never overwritten by the rows of this session.
+        if (m_projectPath == DefaultProjectFile()) {
+            wxRenameFile(m_projectPath, m_projectPath + ".bad", true);
+            AddMessage(get_current_timestamp(), "The unreadable project was kept as " + m_projectPath + ".bad", kFailColour);
+        }
+        m_projectPath = DefaultProjectFile();
+    }
+    if (options.repeat >= 0) m_repeatSpin->SetValue(options.repeat);
     UpdateTitle();
 
     // --- layout ------------------------------------------------------------------------------
@@ -208,6 +228,8 @@ MainWindow::MainWindow()
 
     m_licenseTimer.Start(60 * 1000); // the day may change while the program runs
     UpdateLicenseStatus();
+
+    if (options.run) CallAfter(&MainWindow::RunUnattended); // once the window is shown
 
     Layout();
 }
@@ -372,6 +394,46 @@ void MainWindow::OnOpenResultFile(wxCommandEvent&)
 }
 
 // ------------------------------------------------------------------------------------------------
+// Command line
+// ------------------------------------------------------------------------------------------------
+
+void MainWindow::ConsoleLine(const wxString& text)
+{
+    std::fputs(text.utf8_str(), stdout);
+    std::fputs("\n", stdout);
+    std::fflush(stdout);
+}
+
+void MainWindow::RunUnattended()
+{
+    wxGetApp().SetExitCode(2); // until the run proves otherwise
+    if (m_projectLoadFailed) {
+        ConsoleLine("Process Launcher: the project could not be read: " + m_options.projectPath);
+    }
+    else if (!Licensing::allows(LicensePolicy::kFeatureRun)) {
+        ConsoleLine("Process Launcher: running commands needs a license: " + LicenseDialog::statusBarText());
+        Log::error("Command line run refused: no license for running commands.");
+    }
+    else {
+        wxCommandEvent event;
+        onRunCommand(event);
+        if (m_closing) return; // closed by the operator meanwhile: exit code 2
+        if (!m_options.csvPath.empty()) {
+            wxFileName csv(m_options.csvPath);
+            csv.MakeAbsolute();
+            ExportCsv(csv.GetFullPath(), true);
+        }
+        const int code = m_lastRunCount == 0 ? 2 : (m_lastRunFailures > 0 ? 1 : 0);
+        wxGetApp().SetExitCode(code);
+        const wxString summary = wxString::Format("Process Launcher: %d run(s), %d PASS, %d FAIL - exit code %d",
+                                                  m_lastRunCount, m_lastRunPasses, m_lastRunFailures, code);
+        ConsoleLine(summary);
+        Log::info(std::string(summary.utf8_str()));
+    }
+    Close(true);
+}
+
+// ------------------------------------------------------------------------------------------------
 // Results
 // ------------------------------------------------------------------------------------------------
 
@@ -462,7 +524,7 @@ void MainWindow::ApplyProject(const Project::Data& data)
     m_repeatSpin->SetValue(m_repeat);
 }
 
-bool MainWindow::LoadProject(const wxString& path, bool quiet)
+bool MainWindow::LoadProject(const wxString& path, bool quiet, bool remember)
 {
     Project::Data data;
     wxString error;
@@ -474,7 +536,7 @@ bool MainWindow::LoadProject(const wxString& path, bool quiet)
     }
     ApplyProject(data);
     m_projectPath = path;
-    AppSettings::set("projectFile", path);
+    if (remember) AppSettings::set("projectFile", path);
     UpdateTitle();
     Log::info("Project: " + std::string(path.utf8_str()));
     return true;
@@ -608,6 +670,7 @@ bool MainWindow::CreateResultFile(const wxString& path)
 bool MainWindow::EnsureResultFile()
 {
     if (wxFileExists(ResultFilePath())) return true;
+    if (m_unattended) return CreateResultFile(ResultFilePath()); // no questions in a command line run
     if (m_askingResultFile) return false; // the question is already open (a result arrived while it was shown)
     m_askingResultFile = true;
 
@@ -791,7 +854,7 @@ void MainWindow::OnClose(wxCloseEvent& event)
             return;
         }
     }
-    SaveProject(m_projectPath, true); // the rows are there again at the next start
+    if (!m_unattended) SaveProject(m_projectPath, true); // the rows are there again at the next start
     m_closing = true;
     m_blocking = false; // releases WaitWhileBlocking()
     {
@@ -879,7 +942,7 @@ void MainWindow::onRunCommand(wxCommandEvent&)
     }
 
     m_repeat = m_repeatSpin->GetValue();
-    SaveProject(m_projectPath, true); // what runs is what is saved
+    if (!m_unattended) SaveProject(m_projectPath, true); // what runs is what is saved (a command line run changes no file)
     DisableCmds(); // the commands must not be edited while they run (unlocked again by UnlockWhenIdle())
     m_runAllInProgress = true;
     m_stopRepeat = false;
@@ -919,6 +982,7 @@ void MainWindow::onRunCommand(wxCommandEvent&)
                    failTotal == 0 ? kPassColour : kFailColour);
     }
     m_lastRunFailures = failTotal;
+    m_lastRunPasses = passTotal;
     m_lastRunCount = runs;
 
     m_runAllInProgress = false;

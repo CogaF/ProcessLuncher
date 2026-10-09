@@ -63,6 +63,16 @@ struct CommandOutcome
 
 wxDECLARE_EVENT(wxEVT_THREAD_RESULT, wxThreadEvent);
 
+/*! \brief What the command line asked for (see App.h). */
+struct StartOptions
+{
+    wxString projectPath;     /*!< project to open instead of the last one; empty = the last one. */
+    bool     run = false;     /*!< run the rows unattended at once, then close with an exit code. */
+    int      repeat = -1;     /*!< repeat count for this run, -1 = the project's. */
+    wxString csvPath;         /*!< after the run, export the results here; empty = no export. */
+    wxString screenshotsDir;  /*!< save pictures of the windows here, then close; empty = no. */
+};
+
 /*!
  * \brief Main frame: a table of commands, a "Run command(s)" button, the result file and the list of results.
  *
@@ -86,8 +96,11 @@ wxDECLARE_EVENT(wxEVT_THREAD_RESULT, wxThreadEvent);
 class MainWindow : public wxFrame
 {
 public:
-    /*! \brief Builds the menus, the command rows, the result list and the layout. */
-    MainWindow();
+    /*!
+     * \brief Builds the menus, the command rows, the result list and the layout.
+     * \param options the command line: project to open, unattended run, screenshots.
+     */
+    explicit MainWindow(const StartOptions& options = StartOptions());
 
     /*! \brief Detaches the window from the worker threads: commands still running are abandoned and their results dropped. */
     ~MainWindow() override;
@@ -226,6 +239,12 @@ private:
     /*! \brief Keeps the GUI alive until the blocking "single" command ends, is stopped or the window closes. */
     void WaitWhileBlocking();
 
+    // --- command line -----------------------------------------------------------------------
+    /*! \brief --run: runs the rows without questions, exports the CSV, sets the exit code and closes. */
+    void RunUnattended();
+    /*! \brief Writes a line to the console the program was started from (--run), if any. */
+    static void ConsoleLine(const wxString& text);
+
     // --- result file ------------------------------------------------------------------------
     /*! \brief \return the default result file: result.txt in the folder of the exe. */
     static wxString DefaultResultFile();
@@ -265,9 +284,10 @@ private:
     /*!
      * \brief Reads a project file into the rows and makes it the current one.
      * \param path the file. \param quiet true: a problem goes only to the log and the result list.
+     * \param remember false: the file is not opened again at the next start (command line --project --run).
      * \return false if it could not be read (the rows are unchanged).
      */
-    bool LoadProject(const wxString& path, bool quiet);
+    bool LoadProject(const wxString& path, bool quiet, bool remember = true);
     /*! \brief Writes the rows to \p path and makes it the current project. \param quiet as in LoadProject(). */
     bool SaveProject(const wxString& path, bool quiet);
     /*! \brief Shows the project name in the window title. */
@@ -307,6 +327,9 @@ private:
     std::vector<int> m_tagFailedRows;   /*!< rows that failed in the current repetition. */
     int   m_lastRunFailures = 0;        /*!< FAIL results of the last Run command(s), all repetitions. */
     int   m_lastRunCount = 0;           /*!< repetitions completed by the last Run command(s). */
+    int   m_lastRunPasses = 0;          /*!< PASS results of the last Run command(s), all repetitions. */
+    StartOptions m_options;             /*!< the command line. */
+    bool  m_projectLoadFailed = false;  /*!< the project of the command line could not be read. */
     wxSpinCtrl* m_repeatSpin = nullptr; /*!< the Repeat field. */
     std::vector<ResultCsv::Record> m_records; /*!< every result since the start or the last Clear results, for the export. */
     wxTimer m_licenseTimer;             /*!< re-checks the license dates. */

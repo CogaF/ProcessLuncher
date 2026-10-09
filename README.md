@@ -30,6 +30,17 @@ the selected rows, the tooltip shows the whole text of a row.
 
 The program always starts in **dark mode** (wxWidgets 3.3+).
 
+## Command line
+
+```bat
+start /wait "" "Process Launcher.exe" --run --project tests.pcr --repeat 10 --csv results.csv
+echo %errorlevel%
+```
+
+`--run` runs the rows without questions, exports the CSV and closes: exit code 0 = every result PASS,
+1 = at least one FAIL, 2 = nothing could run (license, project, no row ON). A `.pcr` file given alone
+just opens. `--screenshots <folder>` saves pictures of the windows for the manual.
+
 ## Result file
 
 Under the Run button the **Result file** entry shows the full path of the file where batch files append

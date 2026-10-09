@@ -43,6 +43,11 @@ other, analyses the output (or a result file) and records **PASS** / **FAIL**.
   PASS / FAIL, exit code, duration, note, output), with the list separator of the Windows regional
   settings so Excel opens it in columns. File > Clear results empties the list.
 
+- Command line: `"Process Launcher.exe" [project.pcr] [--project <file>] [--run] [--repeat <n>] [--csv <file>]`.
+  `--run` runs the rows without questions, exports the CSV, prints a summary to the console it was started
+  from and closes with exit code 0 (all PASS), 1 (a FAIL) or 2 (nothing could run). It changes no file
+  but the result file and the CSV. In a batch file: `start /wait "" "Process Launcher.exe" --run ...`.
+
 **Changed**
 - "Run command(s)" now waits until all its commands have ended (Stop waiting, Ctrl+B, releases the wait).
 - Contact e-mail: coga.fation@gmail.com (About window, manual).

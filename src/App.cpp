@@ -14,6 +14,9 @@
 #include <wx/datectrl.h>
 #include <wx/icon.h>
 #include <wx/toplevel.h>
+#include <wx/msw/wrapwin.h>
+
+#include <cstdio>
 
 #include "AppInfo.h"
 #include "BuildInfo.h"
@@ -74,9 +77,48 @@ bool App::OnInit()
     // License and trial state, before the first window (which shows them in its status bar).
     Licensing::initialize();
 
-    auto* frame = new MainWindow();
+    auto* frame = new MainWindow(m_options);
     frame->Show(true);
     return true;
+}
+
+void App::OnInitCmdLine(wxCmdLineParser& parser)
+{
+    wxApp::OnInitCmdLine(parser);
+    parser.AddOption("p", "project", "project file (.pcr) to open instead of the last one", wxCMD_LINE_VAL_STRING);
+    parser.AddSwitch("r", "run", "run the rows at once, without questions, then close (exit code 0 PASS, 1 FAIL, 2 error)");
+    parser.AddOption("n", "repeat", "how many times to run the rows (0 = until stopped)", wxCMD_LINE_VAL_NUMBER);
+    parser.AddOption("c", "csv", "after --run, export the results to this CSV file", wxCMD_LINE_VAL_STRING);
+    parser.AddOption("s", "screenshots", "save pictures of the windows in this folder (for the manual), then close",
+                     wxCMD_LINE_VAL_STRING);
+    parser.AddParam("project file", wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL);
+}
+
+bool App::OnCmdLineParsed(wxCmdLineParser& parser)
+{
+    if (!wxApp::OnCmdLineParsed(parser)) return false;
+    wxString value;
+    if (parser.GetParamCount() > 0) m_options.projectPath = parser.GetParam(0);
+    if (parser.Found("project", &value)) m_options.projectPath = value;
+    m_options.run = parser.Found("run");
+    long repeat = -1;
+    if (parser.Found("repeat", &repeat)) m_options.repeat = static_cast<int>(repeat);
+    if (parser.Found("csv", &value)) m_options.csvPath = value;
+    if (parser.Found("screenshots", &value)) m_options.screenshotsDir = value;
+    if (m_options.run) {
+        // Started from a console: the summary is printed there too (a GUI program has no console of its own).
+        if (AttachConsole(ATTACH_PARENT_PROCESS)) {
+            FILE* stream = nullptr;
+            freopen_s(&stream, "CONOUT$", "w", stdout);
+        }
+    }
+    return true;
+}
+
+int App::OnRun()
+{
+    const int code = wxApp::OnRun();
+    return m_exitCode >= 0 ? m_exitCode : code;
 }
 
 int App::OnExit()
