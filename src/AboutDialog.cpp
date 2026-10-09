@@ -112,7 +112,6 @@ wxWindow* AboutDialog::BuildAboutPage(wxNotebook* book)
         grid->Add(value, 1, wxALIGN_LEFT);
     };
     row("Author:", new wxStaticText(page, wxID_ANY, "Coga Fation"));
-    row("Organisation:", new wxStaticText(page, wxID_ANY, utf8(AppInfo::kOrganisation)));
     row("Contact:", new wxHyperlinkCtrl(page, wxID_ANY, utf8(AppInfo::kContact), wxString("mailto:") + utf8(AppInfo::kContact)));
     row("Project page:", new wxHyperlinkCtrl(page, wxID_ANY, utf8(AppInfo::kWebsite), utf8(AppInfo::kWebsite)));
     row("Copyright:", new wxStaticText(page, wxID_ANY, utf8(AppInfo::kCopyright)));

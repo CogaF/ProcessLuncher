@@ -23,8 +23,6 @@ namespace AppInfo {
 	inline constexpr const char* kDefaultResultFileName = "result.txt";
 	/*! \brief Copyright line shown in the About box. */
 	inline constexpr const char* kCopyright = "Copyright (C) 2025-2026 Fation Coga";
-	/*! \brief Organisation shown in the About box. */
-	inline constexpr const char* kOrganisation = "EGO Group S.r.L";
 	/*! \brief Contact e-mail shown in the About box. */
 	inline constexpr const char* kContact = "coga.fation@gmail.com";
 	/*! \brief Project page shown in the About box. */
