@@ -11,7 +11,8 @@ Read from the source, so the manual follows the program without editing this fil
   - version and release date: the top entry of kAppVersionHistory in include/Version.h;
   - product code, features, editions, trial days: include/LicensePolicy.h;
   - the list of example batch files: line 4 of every bat_examples/NN_*.bat.
-Pictures are optional: a file listed in PICTURES that exists in manual/images is shown where it belongs.
+Pictures are optional: a file listed in PICTURES that exists in manual/images is shown where it belongs;
+"Process Launcher.exe" --screenshots manual\\images makes them (the License window is left out: it shows the UID).
 
 When a release changes something this manual states, change the text, add a line to REVISIONS and
 raise REVISION.
@@ -279,7 +280,6 @@ def mono(text):
 PICTURES = {
     'main-window.png': 'The main window',
     'batch-editor.png': 'The batch file editor',
-    'license.png': 'The License window',
     'about.png': 'The About window',
 }
 
@@ -577,7 +577,6 @@ h1('License')
 para(f'Running commands, Single mode and the batch editor need a license. The first start on a PC begins a '
      f'<b>{TRIAL_DAYS}-day trial</b> with every feature. Without a license the window, the About window and the License '
      'window stay available.')
-picture('license.png', PICTURES['license.png'], 120)
 table(['Feature key', 'Unlocks'],
       [[mono('run'), 'the Run buttons and Run command(s)'], [mono('sequential'), 'Single commands'],
        [mono('editor'), 'the batch file editor']],

@@ -105,7 +105,7 @@ bool App::OnCmdLineParsed(wxCmdLineParser& parser)
     if (parser.Found("repeat", &repeat)) m_options.repeat = static_cast<int>(repeat);
     if (parser.Found("csv", &value)) m_options.csvPath = value;
     if (parser.Found("screenshots", &value)) m_options.screenshotsDir = value;
-    if (m_options.run) {
+    if (m_options.run || !m_options.screenshotsDir.empty()) {
         // Started from a console: the summary is printed there too (a GUI program has no console of its own).
         if (AttachConsole(ATTACH_PARENT_PROCESS)) {
             FILE* stream = nullptr;

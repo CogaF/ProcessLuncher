@@ -48,6 +48,9 @@ other, analyses the output (or a result file) and records **PASS** / **FAIL**.
   from and closes with exit code 0 (all PASS), 1 (a FAIL) or 2 (nothing could run). It changes no file
   but the result file and the CSV. In a batch file: `start /wait "" "Process Launcher.exe" --run ...`.
 
+- `--screenshots <folder>`: demonstration rows (run when licensed; no project or setting written), then
+  pictures of the main window, the batch editor and the About window for the manual.
+
 **Changed**
 - "Run command(s)" now waits until all its commands have ended (Stop waiting, Ctrl+B, releases the wait).
 - Contact e-mail: coga.fation@gmail.com (About window, manual).

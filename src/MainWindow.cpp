@@ -26,6 +26,9 @@
 
 #include <wx/app.h>
 #include <wx/clipbrd.h>
+#include <wx/dcmemory.h>
+#include <wx/dcscreen.h>
+#include <wx/imagpng.h>
 #include <wx/dataobj.h>
 #include <wx/datetime.h>
 #include <wx/filedlg.h>
@@ -34,6 +37,9 @@
 #include <wx/menu.h>
 #include <wx/msgdlg.h>
 #include <wx/msw/wrapwin.h>
+
+#include <dwmapi.h>
+#pragma comment(lib, "dwmapi.lib")
 #include <wx/settings.h>
 #include <wx/stattext.h>
 #include <wx/strconv.h>
@@ -229,7 +235,8 @@ MainWindow::MainWindow(const StartOptions& options)
     m_licenseTimer.Start(60 * 1000); // the day may change while the program runs
     UpdateLicenseStatus();
 
-    if (options.run) CallAfter(&MainWindow::RunUnattended); // once the window is shown
+    if (!options.screenshotsDir.empty()) CallAfter(&MainWindow::TakeScreenshots); // once the window is shown
+    else if (options.run) CallAfter(&MainWindow::RunUnattended);
 
     Layout();
 }
@@ -402,6 +409,79 @@ void MainWindow::ConsoleLine(const wxString& text)
     std::fputs(text.utf8_str(), stdout);
     std::fputs("\n", stdout);
     std::fflush(stdout);
+}
+
+bool MainWindow::CaptureWindow(wxWindow* window, const wxString& path)
+{
+    window->Raise();
+    window->Refresh();
+    window->Update();
+    for (int i = 0; i < 25; i++) { // let the window paint itself completely
+        wxYield();
+        wxMilliSleep(20);
+    }
+    // The visible frame, without the invisible resize borders that GetScreenRect() includes on Windows 10 / 11.
+    wxRect rect = window->GetScreenRect();
+    RECT bounds;
+    if (SUCCEEDED(DwmGetWindowAttribute(window->GetHWND(), DWMWA_EXTENDED_FRAME_BOUNDS, &bounds, sizeof(bounds))))
+        rect = wxRect(bounds.left, bounds.top, bounds.right - bounds.left, bounds.bottom - bounds.top);
+
+    wxBitmap bitmap(rect.width, rect.height);
+    {
+        wxScreenDC screen;
+        wxMemoryDC memory(bitmap);
+        memory.Blit(0, 0, rect.width, rect.height, &screen, rect.x, rect.y);
+    }
+    if (wxImage::FindHandler(wxBITMAP_TYPE_PNG) == nullptr) wxImage::AddHandler(new wxPNGHandler);
+    return bitmap.SaveFile(path, wxBITMAP_TYPE_PNG);
+}
+
+void MainWindow::TakeScreenshots()
+{
+    m_unattended = true; // no question, no project or setting written
+    wxGetApp().SetExitCode(2);
+    wxFileName folder = wxFileName::DirName(m_options.screenshotsDir);
+    folder.MakeAbsolute();
+    if (!folder.DirExists() && !wxFileName::Mkdir(folder.GetPath(), wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL)) {
+        ConsoleLine("Process Launcher: cannot create " + folder.GetPath());
+        Close(true);
+        return;
+    }
+    auto file = [&](const char* name) { return folder.GetPathWithSep() + name; };
+
+    // Demonstration rows, run for real so the list shows genuine results.
+    Project::Data demo;
+    demo.repeat = 1;
+    demo.rows = {
+        { true, false, "bat_examples\\01_minimal_pass_fail.bat", ":File:::[01_minimal_pass_fail] PASS", 0 },
+        { true, false, "bat_examples\\02_ping_host.bat 127.0.0.1", ":File:::[02_ping_host] PASS", 30 },
+        { true, false, "bat_examples\\31_tool_installed.bat where", ":Exit:0", 0 },
+        { true, true, "ping -n 2 127.0.0.1", "TTL=", 10 },
+        { false, false, "bat_examples\\12_disk_free_space.bat C 5", "PASS", 0 },
+    };
+    ApplyProject(demo);
+    SetTitle(wxString::FromUTF8(GetWindowTitle()) + " - demo.pcr");
+    if (Licensing::allows(LicensePolicy::kFeatureRun)) {
+        wxCommandEvent event;
+        onRunCommand(event);
+        if (m_closing) return;
+    }
+
+    bool ok = CaptureWindow(this, file("main-window.png"));
+
+    auto* editor = new BatchEditorFrame(this);
+    editor->Show();
+    ok = CaptureWindow(editor, file("batch-editor.png")) && ok;
+    editor->Close(true);
+
+    auto* about = new AboutDialog(this);
+    about->Show();
+    ok = CaptureWindow(about, file("about.png")) && ok;
+    about->Destroy();
+
+    ConsoleLine(wxString::Format("Process Launcher: screenshots %s in %s", ok ? "saved" : "NOT all saved", folder.GetPath()));
+    wxGetApp().SetExitCode(ok ? 0 : 2);
+    Close(true);
 }
 
 void MainWindow::RunUnattended()

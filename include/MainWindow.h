@@ -242,6 +242,13 @@ private:
     // --- command line -----------------------------------------------------------------------
     /*! \brief --run: runs the rows without questions, exports the CSV, sets the exit code and closes. */
     void RunUnattended();
+    /*!
+     * \brief --screenshots: loads demonstration rows (no file is changed), runs them when licensed and
+     * saves main-window.png, batch-editor.png and about.png in the folder, then closes.
+     */
+    void TakeScreenshots();
+    /*! \brief Saves a picture of the top-level window \p window as the PNG file \p path. \return false on failure. */
+    static bool CaptureWindow(wxWindow* window, const wxString& path);
     /*! \brief Writes a line to the console the program was started from (--run), if any. */
     static void ConsoleLine(const wxString& text);
 
