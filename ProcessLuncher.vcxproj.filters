@@ -26,6 +26,7 @@
     <ClCompile Include="src\MachineId.cpp"><Filter>License</Filter></ClCompile>
     <ClCompile Include="src\MainWindow.cpp"><Filter>Source Files</Filter></ClCompile>
     <ClCompile Include="src\ResultCheck.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="src\CommandRunner.cpp"><Filter>Source Files</Filter></ClCompile>
     <ClCompile Include="src\StatusLed.cpp"><Filter>License</Filter></ClCompile>
     <ClCompile Include="src\TextUtils.cpp"><Filter>License</Filter></ClCompile>
     <ClCompile Include="src\TimeUtils.cpp"><Filter>License</Filter></ClCompile>
@@ -55,6 +56,7 @@
     <ClInclude Include="include\MachineId.h"><Filter>License</Filter></ClInclude>
     <ClInclude Include="include\MainWindow.h"><Filter>Header Files</Filter></ClInclude>
     <ClInclude Include="include\ResultCheck.h"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="include\CommandRunner.h"><Filter>Header Files</Filter></ClInclude>
     <ClInclude Include="include\StatusLed.h"><Filter>License</Filter></ClInclude>
     <ClInclude Include="include\TextUtils.h"><Filter>License</Filter></ClInclude>
     <ClInclude Include="include\TimeUtils.h"><Filter>License</Filter></ClInclude>

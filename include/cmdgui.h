@@ -8,13 +8,14 @@
 #pragma once
 
 #include <wx/wx.h>
+#include <wx/spinctrl.h>
 
 /*!
  * \brief A row of controls that configures one command and shows its state.
  *
- * Layout, left to right: ON/OFF check box, "Run" button, command text, expected-result text,
- * pass/fail counters, single/parallel check box, show/hide check box and a read-only busy/ready
- * check box. The widgets are children of the parent panel and are owned by wxWidgets; the row only
+ * Layout, left to right: ON/OFF check box, "Run" button (it becomes "Stop" while the command
+ * runs), command text, expected-result text, time limit (seconds, 0 = none), pass/fail counters,
+ * single/parallel check box, show/hide check box and a read-only busy/ready check box. The widgets are children of the parent panel and are owned by wxWidgets; the row only
  * keeps pointers to them. The horizontal sizer returned by getPointer() must be added to the
  * parent's layout by the caller.
  *
@@ -44,6 +45,8 @@ public:
     static constexpr int VIEW_ID_INDEX = 6;
     /*! \brief Offset of the "busy / ready" check box id. */
     static constexpr int RUNNING_ID_INDEX = 7;
+    /*! \brief Offset of the time limit id. */
+    static constexpr int TIMEOUT_ID_INDEX = 8;
 
     /*! \brief "ON / OFF" check box (id == getCurrId()): whether the command takes part in "Run command(s)". */
     wxCheckBox* Cmd_active_CB = nullptr;
@@ -92,6 +95,10 @@ public:
     wxString getCmd();
     /*! \brief Reads the expected-result text. \return the text typed by the user. */
     wxString getPositiveVal();
+    /*! \brief Reads the time limit. \return seconds, 0 for none. */
+    int getTimeout();
+    /*! \brief Sets the time limit. \param seconds 0 for none. */
+    void setTimeout(int seconds);
 
     /*! \brief Shows \p countersString in the counters label. \return false if the widget does not exist. */
     bool setCounters(const wxString& countersString);
@@ -148,7 +155,8 @@ private:
     wxTextCtrl*   Cmd_txt = nullptr;          /*!< the command line. */
     wxTextCtrl*   Cmd_res = nullptr;          /*!< the expected result. */
     wxStaticText* Cmd_counters = nullptr;     /*!< "P= nnn || F= nnn" pass / fail counters. */
-    wxButton*     Cmd_run_bt = nullptr;       /*!< runs only this command. */
+    wxButton*     Cmd_run_bt = nullptr;       /*!< runs only this command; "Stop" while it runs. */
+    wxSpinCtrl*   Cmd_timeout = nullptr;      /*!< time limit in seconds, 0 = none. */
 
     wxString _cmdName = "ping -n 1 127.0.0.1";                               /*!< default command. */
     wxString _positiveVal = "TTL=";                                           /*!< default expected result. */
@@ -159,4 +167,5 @@ private:
     bool _isRunning = false;                  /*!< Busy / Ready. */
     bool _isViewShow = false;                 /*!< Show / Hide. */
     bool _isPass = true;                      /*!< outcome of the last execution. */
+    int  _timeout = 0;                        /*!< time limit in seconds, 0 = none. */
 };

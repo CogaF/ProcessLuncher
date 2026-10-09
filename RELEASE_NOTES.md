@@ -22,6 +22,14 @@ other, analyses the output (or a result file) and records **PASS** / **FAIL**.
 
 ## What's new in 0.2.0-rc.2
 
+**Added**
+- Time limit per row (seconds, 0 = none): a command still running then is terminated with everything it
+  started and counted as FAIL.
+- The Run button of a row becomes **Stop** while its command runs.
+- Each command gets `PCR_CMD_ID` (its row number) besides `PCR_RESULT_FILE` and `PCR_APP_DIR`, in its own
+  environment.
+- The result list shows the exit code and the duration of every run.
+
 **Changed**
 - Contact e-mail: coga.fation@gmail.com (About window, manual).
 

@@ -41,6 +41,9 @@ void cmdgui::createControls(wxPanel* parentPanel, int guiIndex)
     Cmd_run_bt = new wxButton(parentPanel, _thisId + RUNBUTTON_ID_INDEX, "Run");
     Cmd_txt = new wxTextCtrl(parentPanel, _thisId + TEXT_ID_INDEX, "");
     Cmd_res = new wxTextCtrl(parentPanel, _thisId + RES_ID_INDEX, "");
+    Cmd_timeout = new wxSpinCtrl(parentPanel, _thisId + TIMEOUT_ID_INDEX, wxEmptyString, wxDefaultPosition,
+                                 wxDefaultSize, wxSP_ARROW_KEYS, 0, 86400, 0);
+    Cmd_timeout->SetToolTip("Time limit in seconds: a command still running then is terminated and counted as FAIL (0 = no limit)");
     Cmd_counters = new wxStaticText(parentPanel, _thisId + COUNTERS_ID_INDEX, "");
     Cmd_sequential_CB = new wxCheckBox(parentPanel, _thisId + SEQUENTIAL_ID_INDEX, "");
     Cmd_view_CB = new wxCheckBox(parentPanel, _thisId + VIEW_ID_INDEX, "");
@@ -54,6 +57,7 @@ void cmdgui::createControls(wxPanel* parentPanel, int guiIndex)
     Cmd_sz->Add(Cmd_run_bt, 1, wxEXPAND | wxALL, 1);
     Cmd_sz->Add(Cmd_txt, 7, wxEXPAND | wxALL, 1);
     Cmd_sz->Add(Cmd_res, 4, wxEXPAND | wxALL, 1);
+    Cmd_sz->Add(Cmd_timeout, 1, wxEXPAND | wxALL, 1);
     Cmd_sz->Add(Cmd_counters, 2, wxEXPAND | wxALL, 1);
     Cmd_sz->Add(Cmd_sequential_CB, 1, wxEXPAND | wxALL, 1);
     Cmd_sz->Add(Cmd_view_CB, 1, wxEXPAND | wxALL, 1);
@@ -66,6 +70,7 @@ void cmdgui::refreshWidgets()
 {
     Cmd_txt->SetValue(_cmdName);
     Cmd_res->SetValue(_positiveVal);
+    Cmd_timeout->SetValue(_timeout);
     Cmd_counters->SetLabel(_counters);
     Cmd_active_CB->SetValue(_isActive);
     Cmd_sequential_CB->SetValue(_isSequential);
@@ -80,8 +85,9 @@ void cmdgui::refreshLabels()
     Cmd_sequential_CB->SetLabel(_isSequential ? "Single" : "Parallel");
     Cmd_view_CB->SetLabel(_isViewShow ? "Show" : "Hide");
     Cmd_running_CB->SetLabel(_isRunning ? "Busy" : "Ready");
-    // The Run button is usable only for an active command that is not already running.
-    Cmd_run_bt->Enable(_isActive && !_isRunning);
+    // Run starts an active command; while it runs the same button stops it.
+    Cmd_run_bt->SetLabel(_isRunning ? "Stop" : "Run");
+    Cmd_run_bt->Enable(_isActive || _isRunning);
 }
 
 void cmdgui::setResult(bool result)
@@ -100,6 +106,7 @@ void cmdgui::disable()
     Cmd_sequential_CB->Disable();
     Cmd_txt->Disable();
     Cmd_res->Disable();
+    Cmd_timeout->Disable();
     Cmd_counters->Disable();
     Cmd_view_CB->Disable();
 }
@@ -110,6 +117,7 @@ void cmdgui::enable()
     Cmd_sequential_CB->Enable();
     Cmd_txt->Enable();
     Cmd_res->Enable();
+    Cmd_timeout->Enable();
     Cmd_counters->Enable();
     // Cmd_view_CB stays disabled until the "view" feature exists.
 }
@@ -119,6 +127,7 @@ void cmdgui::disableEditables()
     Cmd_sequential_CB->Disable();
     Cmd_txt->Disable();
     Cmd_res->Disable();
+    Cmd_timeout->Disable();
     Cmd_view_CB->Disable();
 }
 
@@ -128,6 +137,7 @@ void cmdgui::enableEditables()
         Cmd_sequential_CB->Enable();
         Cmd_txt->Enable();
         Cmd_res->Enable();
+        Cmd_timeout->Enable();
         // Cmd_view_CB stays disabled until the "view" feature exists.
     }
 }
@@ -159,6 +169,18 @@ wxString cmdgui::getPositiveVal()
 {
     _positiveVal = Cmd_res->GetValue();
     return _positiveVal;
+}
+
+int cmdgui::getTimeout()
+{
+    _timeout = Cmd_timeout->GetValue();
+    return _timeout;
+}
+
+void cmdgui::setTimeout(int seconds)
+{
+    _timeout = seconds;
+    if (Cmd_timeout != nullptr) Cmd_timeout->SetValue(_timeout);
 }
 
 bool cmdgui::setCounters(const wxString& countersString)

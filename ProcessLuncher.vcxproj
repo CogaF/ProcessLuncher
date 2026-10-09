@@ -442,6 +442,7 @@ xcopy /y /d "$(WXWIN)\lib\vc_dll\wxmsw333u_core_vc*_custom.dll" "$(OutDir)"</Com
     <ClCompile Include="src\App.cpp" />
     <ClCompile Include="src\AppSettings.cpp" />
     <ClCompile Include="src\BatCommands.cpp" />
+    <ClCompile Include="src\CommandRunner.cpp" />
     <ClCompile Include="src\BatHighlighter.cpp" />
     <ClCompile Include="src\BatchEditorFrame.cpp" />
     <ClCompile Include="src\BuildInfo.cpp" />
@@ -466,6 +467,7 @@ xcopy /y /d "$(WXWIN)\lib\vc_dll\wxmsw333u_core_vc*_custom.dll" "$(OutDir)"</Com
     <ClInclude Include="include\AppInfo.h" />
     <ClInclude Include="include\AppSettings.h" />
     <ClInclude Include="include\BatCommands.h" />
+    <ClInclude Include="include\CommandRunner.h" />
     <ClInclude Include="include\BatHighlighter.h" />
     <ClInclude Include="include\BatchEditorFrame.h" />
     <ClInclude Include="include\BuildInfo.h" />

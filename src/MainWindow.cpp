@@ -11,6 +11,7 @@
 #include "AboutDialog.h"
 #include "AppInfo.h"
 #include "AppSettings.h"
+#include "CommandRunner.h"
 #include "BatchEditorFrame.h"
 #include "BuildInfo.h"
 #include "DataDir.h"
@@ -41,7 +42,6 @@
 #include <wx/file.h>
 
 #include <algorithm>
-#include <set>
 #include <string>
 #include <thread>
 
@@ -53,139 +53,6 @@ namespace {
 const wxColour kPassColour(120, 220, 120);
 /*! \brief Text colour of a FAIL row, readable on the dark background. */
 const wxColour kFailColour(255, 130, 130);
-
-/*! \brief Size of the buffer used to read the pipe of a command (heap, not the thread's small stack). */
-constexpr std::size_t kPipeBufferSize = 64 * 1024;
-
-/*!
- * \brief The job objects of the commands still running.
- *
- * Every command runs in its own job, so its whole process tree (cmd.exe, the batch file and the
- * programs it starts) can be terminated when the window closes while it runs. A finished command's
- * job is closed without killing anything: programs it left running on purpose ("start ...") stay.
- */
-struct RunningJobs
-{
-    std::mutex       mutex; /*!< protects \ref jobs. */
-    std::set<HANDLE> jobs;  /*!< jobs of the commands that have not ended yet. */
-};
-
-/*! \brief The one RunningJobs of the program (shared by the worker threads and the main window). */
-RunningJobs& runningJobs()
-{
-    static RunningJobs instance;
-    return instance;
-}
-
-/*! \brief Terminates the process tree of every command still running. */
-void TerminateRunningCommands()
-{
-    RunningJobs& running = runningJobs();
-    std::lock_guard<std::mutex> lock(running.mutex);
-    for (HANDLE job : running.jobs) TerminateJobObject(job, 1);
-}
-
-/*!
- * \brief Converts the bytes written by a console program to text.
- *
- * Console programs started through "cmd /c" write in the OEM code page of the system, not in the
- * ANSI one used by the GUI.
- * \param raw bytes read from the pipe.
- * \return the text; never throws, undecodable bytes fall back to a 1:1 mapping.
- */
-wxString DecodeConsoleOutput(const std::string& raw)
-{
-    if (raw.empty()) return wxString();
-    wxCSConv conv(wxString::Format("CP%u", static_cast<unsigned>(GetOEMCP())));
-    wxString text;
-    if (conv.IsOk()) text = wxString(raw.data(), conv, raw.size());
-    if (text.empty()) text = wxString::From8BitData(raw.data(), raw.size());
-    return text;
-}
-
-/*!
- * \brief Runs a command line through "cmd /c" without any visible window and captures its output.
- *
- * Standard output and standard error go to the same pipe; standard input is the NUL device so a
- * command that asks for input (for example "pause") ends instead of waiting forever. Called from a
- * worker thread: it must not touch any window.
- *
- * The console of the command cannot be shown and captured at the same time with this technique; the
- * "Show" option of the rows is therefore not implemented.
- * The command starts in \p workingDirectory (the folder of the exe), so relative paths such as
- * "bat_examples\\01_minimal_pass_fail.bat" work however the program was started.
- * \param command the command line as typed in the row.
- * \param workingDirectory the current folder of the command.
- * \return the output, or a text starting with "Error:" if the command could not be started.
- */
-wxString RunCommand(const wxString& command, const wxString& workingDirectory)
-{
-    SECURITY_ATTRIBUTES sa = { sizeof(SECURITY_ATTRIBUTES), nullptr, TRUE };
-
-    HANDLE hRead = nullptr;
-    HANDLE hWrite = nullptr;
-    if (!CreatePipe(&hRead, &hWrite, &sa, 0)) return "Error: Failed to create pipe!";
-    // The child must inherit only the write end.
-    SetHandleInformation(hRead, HANDLE_FLAG_INHERIT, 0);
-
-    HANDLE hNul = CreateFileW(L"NUL", GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, &sa, OPEN_EXISTING,
-                              FILE_ATTRIBUTE_NORMAL, nullptr);
-
-    STARTUPINFOW si = {};
-    si.cb = sizeof(si);
-    si.dwFlags = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
-    si.wShowWindow = SW_HIDE;
-    si.hStdInput = (hNul != INVALID_HANDLE_VALUE) ? hNul : nullptr;
-    si.hStdOutput = hWrite;
-    si.hStdError = hWrite; // stderr goes to the same pipe as stdout
-
-    // CreateProcessW may modify the command line, so it needs its own writable buffer.
-    std::wstring commandLine = L"cmd /c \"" + command.ToStdWstring() + L"\"";
-
-    PROCESS_INFORMATION pi = {};
-    const std::wstring directory = workingDirectory.ToStdWstring();
-    // Started suspended so it is in its job before it can start any child process.
-    const BOOL started = CreateProcessW(nullptr, &commandLine[0], nullptr, nullptr, TRUE, CREATE_NO_WINDOW | CREATE_SUSPENDED,
-                                        nullptr, directory.empty() ? nullptr : directory.c_str(), &si, &pi);
-
-    // The parent must close its copy of the write end, or ReadFile() would never see the end of the output.
-    CloseHandle(hWrite);
-    if (hNul != INVALID_HANDLE_VALUE) CloseHandle(hNul);
-
-    if (!started) {
-        CloseHandle(hRead);
-        return "Error: Failed to execute command!";
-    }
-
-    HANDLE job = CreateJobObjectW(nullptr, nullptr);
-    if (job != nullptr && !AssignProcessToJobObject(job, pi.hProcess)) {
-        CloseHandle(job); // the command still runs, it only cannot be terminated with the window
-        job = nullptr;
-    }
-    if (job != nullptr) {
-        std::lock_guard<std::mutex> lock(runningJobs().mutex);
-        runningJobs().jobs.insert(job);
-    }
-    ResumeThread(pi.hThread);
-
-    std::string raw;
-    std::vector<char> buffer(kPipeBufferSize);
-    DWORD bytesRead = 0;
-    while (ReadFile(hRead, buffer.data(), static_cast<DWORD>(buffer.size()), &bytesRead, nullptr) && bytesRead > 0) {
-        raw.append(buffer.data(), bytesRead); // append by length: the output may contain NUL bytes
-    }
-
-    CloseHandle(hRead);
-    WaitForSingleObject(pi.hProcess, INFINITE);
-    CloseHandle(pi.hProcess);
-    CloseHandle(pi.hThread);
-    if (job != nullptr) {
-        std::lock_guard<std::mutex> lock(runningJobs().mutex);
-        runningJobs().jobs.erase(job);
-        CloseHandle(job);
-    }
-    return DecodeConsoleOutput(raw);
-}
 
 } // namespace
 
@@ -382,8 +249,12 @@ void MainWindow::OnButtonEvent(wxCommandEvent& event)
     }
 
     // The "Run" button of a single row: start only that command (it never blocks the others).
+    // While the command runs the same button is "Stop".
     cmdgui& cmd = *m_cmds[static_cast<size_t>(row)];
-    if (cmd.getRunning()) return;
+    if (cmd.getRunning()) {
+        if (CommandRunner::stop(row)) AddMessage(get_current_timestamp(), wxString::Format("Stopping CMD %d", row + 1));
+        return;
+    }
     if (!RequireFeature(LicensePolicy::kFeatureRun, LicenseDialog::featureName(LicensePolicy::kFeatureRun))) return;
     if (UsesResultFile(row) && !EnsureResultFile()) {
         AddMessage(get_current_timestamp(), wxString::Format("CMD %d not started: no result file", row + 1));
@@ -727,7 +598,7 @@ void MainWindow::OnClose(wxCloseEvent& event)
         std::lock_guard<std::mutex> lock(m_sink->mutex);
         m_sink->target = nullptr; // no result is posted to this window from now on
     }
-    TerminateRunningCommands();
+    CommandRunner::stopAll();
 
     // onRunCommand() may be waiting for a single command further up this call stack (wxYield): the
     // window must outlive it, so it destroys the window itself when it returns.
@@ -853,13 +724,28 @@ void MainWindow::StartThread(const wxString& input, int commandIndex)
     // Only what the command appends to the result file counts: an old PASS must not make it pass.
     const wxFileOffset resultFileOffset = ResultCheck::fileSize(resultFile);
     const wxString workingDirectory = wxString(DataDir::exeDirectory().wstring());
+    const long timeoutMs = 1000L * m_cmds[static_cast<size_t>(commandIndex)]->getTimeout();
+    // Each command gets its own environment: the result file, the folder of the exe and its row number.
+    const std::vector<std::pair<wxString, wxString>> environment = {
+        { "PCR_RESULT_FILE", resultFile },
+        { "PCR_APP_DIR", workingDirectory },
+        { "PCR_CMD_ID", wxString::Format("%d", commandIndex + 1) },
+    };
 
-    std::thread([sink, command, expected, resultFile, resultFileOffset, workingDirectory, commandIndex]() {
+    std::thread([sink, command, expected, resultFile, resultFileOffset, workingDirectory, environment, timeoutMs, commandIndex]() {
         CommandOutcome outcome;
         outcome.index = commandIndex;
-        outcome.output = RunCommand(command, workingDirectory);
+        const CommandRunner::Result run = CommandRunner::run(command, workingDirectory, environment, timeoutMs, commandIndex);
+        outcome.output = run.output;
+        outcome.exitCode = run.exitCode;
+        outcome.durationMs = run.durationMs;
         wxString missingResultFile;
         outcome.pass = ResultCheck::evaluate(expected, outcome.output, resultFile, resultFileOffset, outcome.note, missingResultFile);
+        if (run.timedOut || run.stopped) {
+            outcome.pass = false; // a terminated command never passes
+            outcome.note = run.timedOut ? wxString::Format("CMD %d terminated: time limit of %ld s expired", commandIndex + 1, timeoutMs / 1000)
+                                        : wxString::Format("CMD %d terminated: stopped", commandIndex + 1);
+        }
 
         auto* event = new wxThreadEvent(wxEVT_THREAD_RESULT);
         event->SetPayload(outcome);
@@ -899,7 +785,8 @@ void MainWindow::OnThreadResult(wxThreadEvent& event)
     const wxColour colour = outcome.pass ? kPassColour : kFailColour;
 
     if (!outcome.note.empty()) AddMessage(get_current_timestamp(), outcome.note, kFailColour);
-    AddMessage(get_current_timestamp(), wxString::Format("Cmd %d %s, result is: %s", outcome.index + 1, status, output),
+    AddMessage(get_current_timestamp(), wxString::Format("Cmd %d %s (exit code %ld, %.1f s), result is: %s", outcome.index + 1, status,
+                                                         outcome.exitCode, outcome.durationMs / 1000.0, output),
                colour);
     UnlockWhenIdle();
 }

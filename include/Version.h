@@ -36,6 +36,7 @@ inline constexpr AppVersionHistoryEntry kAppVersionHistory[] = {
 		"Fixed: batch editors ask to save before the main window closes.\n"
 		"Fixed: rows unlocked when the last command ends; previous-failure check covers every earlier row.\n"
 		"Fixed: batch editor saves a file in the encoding it was read in (OEM code page or UTF-8).\n"
+		"Added: time limit per row, Stop button, PCR_CMD_ID, exit code and duration in the result list.\n"
 		"Changed: contact e-mail coga.fation@gmail.com." },
 	{ "0.2.0-rc.1", "2026-09-30",
 		"Added: wxWidgets 3.3 and dark mode.\n"

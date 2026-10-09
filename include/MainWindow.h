@@ -51,6 +51,8 @@ struct CommandOutcome
     bool     pass = false;   /*!< true if the expected result was found. */
     wxString output;         /*!< console output of the command. */
     wxString note;           /*!< extra information (for example "file ... doesn't exist"), may be empty. */
+    long     exitCode = -1;  /*!< exit code of the command, -1 if unknown. */
+    long     durationMs = 0; /*!< how long the command ran. */
 };
 
 wxDECLARE_EVENT(wxEVT_THREAD_RESULT, wxThreadEvent);
