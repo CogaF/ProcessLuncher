@@ -40,7 +40,7 @@ IMAGES = os.path.join(HERE, 'images')
 OUTPUT = os.path.join(HERE, 'Process_Launcher_User_Manual.pdf')
 
 sys.path.insert(0, HERE)
-from manual_legal import (OWNER, CONTACT, ORGANISATION, WEBSITE, PRODUCT, COPYRIGHT_LINE,  # noqa: E402
+from manual_legal import (OWNER, CONTACT, WEBSITE, PRODUCT, COPYRIGHT_LINE,  # noqa: E402
                           SECTIONS as LEGAL, TITLE as LEGAL_TITLE)
 
 DOC_ID = 'PCR-UM-001'
@@ -302,7 +302,6 @@ cover = [
     ['Revision', REVISION],
     ['Date', DATE],
     ['Author', AUTHOR],
-    ['Organisation', ORGANISATION],
     ['Contact', CONTACT],
     ['Project page', WEBSITE],
     ['Classification', f'Proprietary - for users of {PRODUCT}'],

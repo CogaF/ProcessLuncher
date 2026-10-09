@@ -2,7 +2,7 @@ r"""
 The owner of Process Launcher and the legal notices printed after the cover of its manuals.
 
 The owner, the copyright years, the contact and the project page are read from include\AppInfo.h
-(kCopyright, kContact, kOrganisation, kWebsite), the one place the program keeps them, so the About
+(kCopyright, kContact, kWebsite), the one place the program keeps them, so the About
 window and the manuals always name the same holder - the holder of the license system.
 No reportlab here: only the texts.
 """
@@ -26,7 +26,6 @@ if not _copyright:
     raise SystemExit('kCopyright of include/AppInfo.h is not "Copyright (C) <years> <owner>"')
 YEARS, OWNER = _copyright.group(1), _copyright.group(2).strip()
 CONTACT = _app_info('kContact')
-ORGANISATION = _app_info('kOrganisation')
 WEBSITE = _app_info('kWebsite')
 PRODUCT = _app_info('kName')
 COPYRIGHT_LINE = f'Copyright © {YEARS} {OWNER}. All rights reserved.'
