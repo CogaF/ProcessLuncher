@@ -19,7 +19,7 @@
 /*! \brief PATCH: bug fixes only. */
 #define APP_VERSION_PATCH 0
 /*! \brief "rc.N" while testing, "" for the final release. */
-#define APP_VERSION_PRERELEASE "rc.1"
+#define APP_VERSION_PRERELEASE "rc.2"
 
 /*! \brief One released (or release-candidate) version; notes: one item per line, "Added:/Changed:/Fixed:/Note:". */
 struct AppVersionHistoryEntry {
@@ -30,6 +30,13 @@ struct AppVersionHistoryEntry {
 
 /*! \brief Newest first. */
 inline constexpr AppVersionHistoryEntry kAppVersionHistory[] = {
+	{ "0.2.0-rc.2", "2026-10-09",
+		"Fixed: closing the window while waiting for a single command could crash.\n"
+		"Fixed: closing the window terminates the unfinished commands with everything they started.\n"
+		"Fixed: batch editors ask to save before the main window closes.\n"
+		"Fixed: rows unlocked when the last command ends; previous-failure check covers every earlier row.\n"
+		"Fixed: batch editor saves a file in the encoding it was read in (OEM code page or UTF-8).\n"
+		"Changed: contact e-mail coga.fation@gmail.com." },
 	{ "0.2.0-rc.1", "2026-09-30",
 		"Added: wxWidgets 3.3 and dark mode.\n"
 		"Added: result file next to the exe: path shown and editable, created on request, searched only from where it ended when the command started.\n"

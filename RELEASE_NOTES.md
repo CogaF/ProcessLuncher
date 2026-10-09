@@ -1,9 +1,9 @@
-# Process Launcher 0.2.0-rc.1 - binaries
+# Process Launcher 0.2.0-rc.2 - binaries
 
-Release candidate, 2026-09-30. Parallel Command Runner: runs commands in parallel or one after the
+Release candidate, 2026-10-09. Parallel Command Runner: runs commands in parallel or one after the
 other, analyses the output (or a result file) and records **PASS** / **FAIL**.
 
-## What's new since 0.1.0
+## What's new in 0.2.0-rc.1 (since 0.1.0)
 
 **Added**
 - wxWidgets 3.3 and dark mode (the program always starts in dark mode).
@@ -20,7 +20,10 @@ other, analyses the output (or a result file) and records **PASS** / **FAIL**.
 - Duplicate event symbol, uninitialised counters, worker threads calling the GUI, result text used as
   a format string, broken `:File:` parsing, crash when opening the batch editor.
 
-## Changes after 0.2.0-rc.1 (not released yet)
+## What's new in 0.2.0-rc.2
+
+**Changed**
+- Contact e-mail: coga.fation@gmail.com (About window, manual).
 
 **Fixed**
 - Closing the window while "Run command(s)" waited for a *Single* command could crash (the window was

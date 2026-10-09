@@ -46,7 +46,7 @@ DOC_ID = 'PCR-UM-001'
 REVISION = '1.0'
 DATE = '9 October 2026'
 REVISIONS = [
-    ('1.0', DATE, 'First issue. Includes the changes after 0.2.0-rc.1: commands terminated with the window, rows '
+    ('1.0', DATE, 'First issue. Includes the changes of 0.2.0-rc.2: commands terminated with the window, rows '
                   'unlocked after a run, batch files saved in their own encoding.'),
 ]
 AUTHOR = OWNER

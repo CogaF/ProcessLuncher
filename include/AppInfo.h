@@ -26,7 +26,7 @@ namespace AppInfo {
 	/*! \brief Organisation shown in the About box. */
 	inline constexpr const char* kOrganisation = "EGO Group S.r.L";
 	/*! \brief Contact e-mail shown in the About box. */
-	inline constexpr const char* kContact = "fation.coga@egogroup.eu";
+	inline constexpr const char* kContact = "coga.fation@gmail.com";
 	/*! \brief Project page shown in the About box. */
 	inline constexpr const char* kWebsite = "https://github.com/CogaF/ProcessLuncher";
 	/*! \brief Licence line shown in the About box (the user's own license: Info > License). */
