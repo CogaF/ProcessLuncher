@@ -39,6 +39,8 @@ enum id {
     ID_OPEN_PROJECT,                  /*!< Menu File: open a project file (the command rows). */
     ID_SAVE_PROJECT,                  /*!< Menu File: save the command rows in the project file. */
     ID_SAVE_PROJECT_AS,               /*!< Menu File: save the command rows in another project file. */
+    ID_REPEAT_SPIN,                   /*!< How many times Run command(s) runs the rows. */
+    ID_STOP_REPEAT,                   /*!< Menu Settings: do not start the next repetition. */
 
     ID_GUI_CLASS = wxID_HIGHEST + 251 /*!< First id of the command rows (see cmdRowBaseId()). */
 };

@@ -33,11 +33,15 @@ other, analyses the output (or a result file) and records **PASS** / **FAIL**.
   Open project / Save project (Ctrl+S) / Save project as keep several sets of commands; a project also
   holds the result file and the repeat count.
 - The result list shows the exit code and the duration of every run.
+- **Repeat** field next to "Run command(s)": the rows are run that many times (0 = until Settings > Stop
+  repeating, Ctrl+R); each run waits for all its commands and ends with a summary line (PASS / FAIL counts and
+  the failed rows), followed by a total. The questions of *Single* commands are asked in the first run only.
 - Expected result `:Exit:<codes>`: PASS when the exit code is in the list, e.g. `:Exit:0`, `:Exit:0-7,16`.
 - `{id}` in an expected result is replaced by the row number: `:File:::[test#{id}] PASS` tells apart rows
   running the same batch file in parallel (the batch file writes `[%~n0#%PCR_CMD_ID%]`).
 
 **Changed**
+- "Run command(s)" now waits until all its commands have ended (Stop waiting, Ctrl+B, releases the wait).
 - Contact e-mail: coga.fation@gmail.com (About window, manual).
 
 **Fixed**

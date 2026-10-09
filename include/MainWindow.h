@@ -13,6 +13,7 @@
 #include <wx/listctrl.h>
 #include <wx/panel.h>
 #include <wx/sizer.h>
+#include <wx/spinctrl.h>
 #include <wx/string.h>
 #include <wx/textctrl.h>
 #include <wx/thread.h>
@@ -49,6 +50,7 @@ static_assert(kNrOfCmds <= MaxNrOfCMDs, "kNrOfCmds exceeds MaxNrOfCMDs");
 struct CommandOutcome
 {
     int      index = -1;     /*!< zero based index of the command row. */
+    int      runTag = 0;     /*!< the repetition of Run command(s) that started it, 0 for the Run button of a row. */
     bool     pass = false;   /*!< true if the expected result was found. */
     wxString output;         /*!< console output of the command. */
     wxString note;           /*!< extra information (for example "file ... doesn't exist"), may be empty. */
@@ -132,11 +134,16 @@ private:
     void OnDisable(wxCommandEvent& event);
     /*! \brief Menu Settings > Stop waiting: releases a "single" command that blocks "Run command(s)". */
     void OnStopWaiting(wxCommandEvent& event);
+    /*! \brief Menu Settings > Stop repeating: the current run ends, no further repetition starts. */
+    void OnStopRepeat(wxCommandEvent& event);
     /*! \brief Check boxes of the rows (ON/OFF, single/parallel, show/hide). */
     void OnGuiEvent(wxCommandEvent& event);
     /*! \brief Buttons: the general "Run command(s)" and the "Run" of every row. */
     void OnButtonEvent(wxCommandEvent& event);
-    /*! \brief "Run command(s)": runs every active command, honouring single / parallel. */
+    /*!
+     * \brief "Run command(s)": runs every active command, honouring single / parallel, as many times as
+     * the Repeat field says; each run waits for all its commands and ends with a summary line.
+     */
     void onRunCommand(wxCommandEvent& event);
     /*! \brief Result of a worker thread (wxEVT_THREAD_RESULT). */
     void OnThreadResult(wxThreadEvent& event);
@@ -191,14 +198,24 @@ private:
      * and posts a ::wxEVT_THREAD_RESULT event to this window.
      * \param input the command line.
      * \param commandIndex row index.
+     * \param runTag the repetition it belongs to (see CommandOutcome::runTag).
      */
-    void StartThread(const wxString& input, int commandIndex);
+    void StartThread(const wxString& input, int commandIndex, int runTag);
+    /*!
+     * \brief Starts every active row once (one repetition).
+     * \param firstRun the questions of single commands are asked only in the first.
+     * \return how many commands were started.
+     */
+    int RunRowsOnce(bool firstRun);
+    /*! \brief Keeps the GUI alive until no command runs, "Stop waiting" is chosen or the window closes. */
+    void WaitWhileAnyRunning();
     /*!
      * \brief Starts a "single" command of "Run command(s)" after asking the operator.
      * \param commandIndex row index; the row is already marked running.
+     * \param ask false: no question (repeated or unattended run), a previous failure is only recorded.
      * \return true if the command was started (the caller must then wait for it).
      */
-    bool StartSingleCommand(int commandIndex);
+    bool StartSingleCommand(int commandIndex, bool ask);
     /*! \brief Keeps the GUI alive until the blocking "single" command ends, is stopped or the window closes. */
     void WaitWhileBlocking();
 
@@ -269,6 +286,15 @@ private:
     bool  m_askingResultFile = false;   /*!< the "result file does not exist" question is open. */
     wxString m_projectPath;             /*!< the current project file (saved on close and at every run). */
     int   m_repeat = 1;                 /*!< how many times Run command(s) runs the rows, 0 = until stopped. */
+    bool  m_stopRepeat = false;         /*!< Settings > Stop repeating was chosen. */
+    bool  m_unattended = false;         /*!< command line run: no questions. */
+    int   m_runTag = 0;                 /*!< number of the current repetition (grows with every one). */
+    int   m_tagPass = 0;                /*!< PASS results of the current repetition. */
+    int   m_tagFail = 0;                /*!< FAIL results of the current repetition. */
+    std::vector<int> m_tagFailedRows;   /*!< rows that failed in the current repetition. */
+    int   m_lastRunFailures = 0;        /*!< FAIL results of the last Run command(s), all repetitions. */
+    int   m_lastRunCount = 0;           /*!< repetitions completed by the last Run command(s). */
+    wxSpinCtrl* m_repeatSpin = nullptr; /*!< the Repeat field. */
     wxTimer m_licenseTimer;             /*!< re-checks the license dates. */
 
     wxTextCtrl* m_resultFileTxt = nullptr; /*!< shows (and edits) the full path of the result file. */

@@ -86,7 +86,9 @@ MainWindow::MainWindow()
     settingsMenu->Append(windowIDs::ID_OPEN_DATA_FOLDER, "Open &data folder", "Open the folder with the log, settings and license");
     settingsMenu->AppendSeparator();
     settingsMenu->Append(windowIDs::ID_STOP_WAITING, "&Stop waiting\tCtrl-B",
-                         "Stop waiting for the running single command and go on with the next ones");
+                         "Stop waiting for the running single command (or for the end of a run) and go on");
+    settingsMenu->Append(windowIDs::ID_STOP_REPEAT, "Stop &repeating\tCtrl-R",
+                         "Let the current run end, then do not start the next repetition");
 
     auto* menuHelp = new wxMenu;
     menuHelp->Append(windowIDs::ID_LICENSE, "&License...\tCtrl-K", "The license in use, the trial and how to get a license");
@@ -109,6 +111,15 @@ MainWindow::MainWindow()
 
     m_runBT = new wxButton(m_mainPanel, windowIDs::ID_RUN_COMMAND_BT, "Run command(s)", wxDefaultPosition,
                            FromDIP(wxSize(-1, 40)));
+    auto* repeatLabel = new wxStaticText(m_mainPanel, wxID_ANY, "Repeat:");
+    m_repeatSpin = new wxSpinCtrl(m_mainPanel, windowIDs::ID_REPEAT_SPIN, wxEmptyString, wxDefaultPosition, FromDIP(wxSize(90, -1)),
+                                  wxSP_ARROW_KEYS, 0, 100000, 1);
+    m_repeatSpin->SetToolTip("How many times Run command(s) runs the rows; each run waits for the previous one to end.\n"
+                             "0 = until Settings > Stop repeating (Ctrl-R).");
+    auto* runRow = new wxBoxSizer(wxHORIZONTAL);
+    runRow->Add(m_runBT, 1, wxEXPAND | wxRIGHT, FromDIP(6));
+    runRow->Add(repeatLabel, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, FromDIP(4));
+    runRow->Add(m_repeatSpin, 0, wxALIGN_CENTER_VERTICAL);
 
     // Result file: the full path is always visible and can be typed or chosen.
     auto* resultRow = new wxBoxSizer(wxHORIZONTAL);
@@ -150,7 +161,7 @@ MainWindow::MainWindow()
 
     // --- layout ------------------------------------------------------------------------------
     auto* componentsSizer = new wxBoxSizer(wxVERTICAL);
-    componentsSizer->Add(m_runBT, 0, wxEXPAND | wxALL, 1);
+    componentsSizer->Add(runRow, 0, wxEXPAND | wxALL, 1);
     componentsSizer->Add(resultRow, 0, wxEXPAND | wxALL, 1);
     componentsSizer->Add(m_cmdsSizer, 0, wxEXPAND | wxALL, 1);
     componentsSizer->Add(m_resultList, 1, wxEXPAND | wxALL, 1); // the list takes all the remaining space
@@ -180,6 +191,7 @@ MainWindow::MainWindow()
     Bind(wxEVT_MENU, &MainWindow::OnEnable, this, windowIDs::ID_ENABLE_EDIT);
     Bind(wxEVT_MENU, &MainWindow::OnDisable, this, windowIDs::ID_DISABLE_EDIT);
     Bind(wxEVT_MENU, &MainWindow::OnStopWaiting, this, windowIDs::ID_STOP_WAITING);
+    Bind(wxEVT_MENU, &MainWindow::OnStopRepeat, this, windowIDs::ID_STOP_REPEAT);
     // Command events of the children travel up to the frame.
     Bind(wxEVT_CHECKBOX, &MainWindow::OnGuiEvent, this);
     Bind(wxEVT_BUTTON, &MainWindow::OnButtonEvent, this);
@@ -274,7 +286,7 @@ void MainWindow::OnButtonEvent(wxCommandEvent& event)
         return;
     }
     if (cmd.setRunning(true)) {
-        StartThread(cmd.getCmd(), row);
+        StartThread(cmd.getCmd(), row, 0); // not part of a run of all the rows
     }
     else {
         AddMessage(get_current_timestamp(), wxString::Format("Couldn't set the CMD %d gui to BUSY", row + 1));
@@ -367,7 +379,7 @@ Project::Data MainWindow::CollectProject()
 {
     Project::Data data;
     data.resultFile = ResultFilePath();
-    data.repeat = m_repeat;
+    data.repeat = m_repeatSpin->GetValue();
     for (auto& cmd : m_cmds) {
         data.rows.push_back({ cmd->isActive(), cmd->isSequential(), cmd->getCmd(), cmd->getPositiveVal(), cmd->getTimeout() });
     }
@@ -394,6 +406,7 @@ void MainWindow::ApplyProject(const Project::Data& data)
     }
     if (!data.resultFile.empty()) SetResultFile(data.resultFile);
     m_repeat = data.repeat;
+    m_repeatSpin->SetValue(m_repeat);
 }
 
 bool MainWindow::LoadProject(const wxString& path, bool quiet)
@@ -604,9 +617,17 @@ void MainWindow::DisableCmds()
 void MainWindow::OnStopWaiting(wxCommandEvent&)
 {
     if (!m_blocking) return;
-    AddMessage(get_current_timestamp(), wxString::Format("Stopped waiting for CMD %d", m_blockingCommandIndex + 1));
+    AddMessage(get_current_timestamp(), m_blockingCommandIndex < 0 ? wxString("Stopped waiting for the running commands")
+                                                                   : wxString::Format("Stopped waiting for CMD %d", m_blockingCommandIndex + 1));
     m_blocking = false;
     m_blockingCommandIndex = -1;
+}
+
+void MainWindow::OnStopRepeat(wxCommandEvent&)
+{
+    if (!m_runAllInProgress || m_stopRepeat) return;
+    m_stopRepeat = true;
+    AddMessage(get_current_timestamp(), "Repeating stops after the current run");
 }
 
 bool MainWindow::AnyCommandRunning() const
@@ -745,12 +766,12 @@ void MainWindow::WaitWhileBlocking()
     }
 }
 
-bool MainWindow::StartSingleCommand(int i)
+bool MainWindow::StartSingleCommand(int i, bool ask)
 {
     cmdgui& cmd = *m_cmds[static_cast<size_t>(i)];
 
     // The operator may wait for the previous commands in case this one depends on them.
-    wxMessageBox("Next command will be executed in single mode, the next ones will wait for this to complete\n"
+    if (ask) wxMessageBox("Next command will be executed in single mode, the next ones will wait for this to complete\n"
                  "Make sure it does not depend on previous commands and hit OK when ready",
                  "ATTENTION Blocking thread", wxOK | wxICON_INFORMATION, this);
     if (m_closing) return false;
@@ -760,7 +781,11 @@ bool MainWindow::StartSingleCommand(int i)
     for (int previous = 0; previous < i; previous++) {
         if (!m_cmds[static_cast<size_t>(previous)]->getResult()) failed += wxString::Format(" %d", previous + 1);
     }
-    if (!failed.empty() &&
+    if (!failed.empty() && !ask) {
+        // repeated or unattended runs go on: only the list records it
+        AddMessage(get_current_timestamp(), wxString::Format("CMD %d started although CMD%s failed", i + 1, failed));
+    }
+    else if (!failed.empty() &&
         wxMessageBox("Found at least one previous executed CMD with fail result (CMD" + failed + ")\nDo you still want to proceed?",
                      "ATTENTION Previous Failure", wxYES_NO, this) != wxYES) {
         // Keep track of the decision and leave the row idle.
@@ -772,13 +797,13 @@ bool MainWindow::StartSingleCommand(int i)
     // The flags are set before the thread starts, so the result can never arrive before them.
     m_blocking = true;
     m_blockingCommandIndex = i;
-    StartThread(cmd.getCmd(), i);
+    StartThread(cmd.getCmd(), i, m_runTag);
     return true;
 }
 
 void MainWindow::onRunCommand(wxCommandEvent&)
 {
-    // The loop below waits (yielding to the GUI) for single commands: the button could be pressed again meanwhile.
+    // The loop below waits (yielding to the GUI) for the commands: the button could be pressed again meanwhile.
     if (m_runAllInProgress) {
         AddMessage(get_current_timestamp(), "A run of the commands is already in progress");
         return;
@@ -792,18 +817,70 @@ void MainWindow::onRunCommand(wxCommandEvent&)
             AddMessage(get_current_timestamp(), wxString::Format("Found cmd %d active", static_cast<int>(i) + 1));
             foundRunning = true;
         }
-        m_cmds[i]->setResult(true); // every command starts as "not failed"
     }
 
-    if (foundRunning &&
+    if (foundRunning && !m_unattended &&
         wxMessageBox("Found at least one thread still active:\nDo you want to launch all the not running commands?",
                      " PCR - Confirmation Request", wxYES_NO, this) != wxYES) {
         return;
     }
 
+    m_repeat = m_repeatSpin->GetValue();
     SaveProject(m_projectPath, true); // what runs is what is saved
     DisableCmds(); // the commands must not be edited while they run (unlocked again by UnlockWhenIdle())
     m_runAllInProgress = true;
+    m_stopRepeat = false;
+
+    const int total = m_repeat; // 0 = until Settings > Stop repeating
+    int runs = 0, passTotal = 0, failTotal = 0;
+    for (int iteration = 1; (total == 0 || iteration <= total) && !m_closing && !m_stopRepeat; iteration++) {
+        m_runTag++;
+        m_tagPass = 0;
+        m_tagFail = 0;
+        m_tagFailedRows.clear();
+        const int started = RunRowsOnce(iteration == 1);
+        if (m_closing) break;
+        if (started == 0) {
+            AddMessage(get_current_timestamp(), "No command was started (no row ON, or all still running)", kFailColour);
+            break;
+        }
+        WaitWhileAnyRunning();
+        if (m_closing) break;
+
+        runs++;
+        passTotal += m_tagPass;
+        failTotal += m_tagFail;
+        wxString failedRows;
+        for (int row : m_tagFailedRows) failedRows += wxString::Format(" %d", row + 1);
+        const wxString of = total == 0 ? wxString::Format("%d", iteration) : wxString::Format("%d/%d", iteration, total);
+        AddMessage(get_current_timestamp(),
+                   wxString::Format("Run %s ended: %d PASS, %d FAIL", of, m_tagPass, m_tagFail) +
+                       (failedRows.empty() ? wxString() : " (CMD" + failedRows + ")"),
+                   m_tagFail == 0 ? kPassColour : kFailColour);
+        Log::info(std::string(wxString::Format("Run %s: %d PASS, %d FAIL", of, m_tagPass, m_tagFail).utf8_str()));
+    }
+    if (runs > 1 || m_stopRepeat) {
+        AddMessage(get_current_timestamp(),
+                   wxString::Format("Repeat ended after %d run(s)%s: %d PASS, %d FAIL", runs, m_stopRepeat ? " (stopped)" : "",
+                                    passTotal, failTotal),
+                   failTotal == 0 ? kPassColour : kFailColour);
+    }
+    m_lastRunFailures = failTotal;
+    m_lastRunCount = runs;
+
+    m_runAllInProgress = false;
+    if (m_closing) { // the window was closed while the commands were waited for
+        Destroy();
+        return;
+    }
+    UnlockWhenIdle();
+}
+
+int MainWindow::RunRowsOnce(bool firstRun)
+{
+    int started = 0;
+    for (auto& cmd : m_cmds) cmd->setResult(true); // every command starts as "not failed"
+
     for (int i = 0; i < kNrOfCmds && !m_closing; i++) {
         cmdgui& cmd = *m_cmds[static_cast<size_t>(i)];
 
@@ -827,21 +904,32 @@ void MainWindow::onRunCommand(wxCommandEvent&)
         }
 
         if (cmd.isSequential()) {
-            if (StartSingleCommand(i)) WaitWhileBlocking();
+            if (StartSingleCommand(i, firstRun && !m_unattended)) {
+                started++;
+                WaitWhileBlocking();
+            }
         }
         else {
-            StartThread(cmd.getCmd(), i);
+            StartThread(cmd.getCmd(), i, m_runTag);
+            started++;
         }
     }
-    m_runAllInProgress = false;
-    if (m_closing) { // the window was closed while a single command was waited for
-        Destroy();
-        return;
-    }
-    UnlockWhenIdle();
+    return started;
 }
 
-void MainWindow::StartThread(const wxString& input, int commandIndex)
+void MainWindow::WaitWhileAnyRunning()
+{
+    // Like WaitWhileBlocking(), for every command; "Stop waiting" (Ctrl-B) also ends this wait.
+    m_blocking = true;
+    m_blockingCommandIndex = -1;
+    while (m_blocking && !m_closing && AnyCommandRunning()) {
+        wxYield();
+        wxMilliSleep(10);
+    }
+    m_blocking = false;
+}
+
+void MainWindow::StartThread(const wxString& input, int commandIndex, int runTag)
 {
     // Everything the worker needs is copied here, on the main thread: it never reads a widget.
     const std::shared_ptr<EventSink> sink = m_sink;
@@ -859,9 +947,10 @@ void MainWindow::StartThread(const wxString& input, int commandIndex)
         { "PCR_CMD_ID", wxString::Format("%d", commandIndex + 1) },
     };
 
-    std::thread([sink, command, expected, resultFile, resultFileOffset, workingDirectory, environment, timeoutMs, commandIndex]() {
+    std::thread([sink, command, expected, resultFile, resultFileOffset, workingDirectory, environment, timeoutMs, commandIndex, runTag]() {
         CommandOutcome outcome;
         outcome.index = commandIndex;
+        outcome.runTag = runTag;
         const CommandRunner::Result run = CommandRunner::run(command, workingDirectory, environment, timeoutMs, commandIndex);
         outcome.output = run.output;
         outcome.exitCode = run.exitCode;
@@ -898,6 +987,13 @@ void MainWindow::OnThreadResult(wxThreadEvent& event)
     if (outcome.pass) m_passed[i]++;
     else m_failed[i]++;
     cmd.setResult(outcome.pass);
+    if (outcome.runTag != 0 && outcome.runTag == m_runTag) { // counted in the summary of the current run
+        if (outcome.pass) m_tagPass++;
+        else {
+            m_tagFail++;
+            m_tagFailedRows.push_back(outcome.index);
+        }
+    }
     cmd.setCounters(wxString::Format("  P= %03d || F= %03d", m_passed[i], m_failed[i]));
     cmd.setRunning(false);
 
