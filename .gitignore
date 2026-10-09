@@ -401,6 +401,8 @@ FodyWeavers.xsd
 Builds/
 obj/
 Outputs/
+# intermediate files of older project layouts (<ProjectName>\<Configuration>)
+Process Launcher/
 docs/
 
 # License issuing: the encrypted signing key(s) and the ledger of issued licenses - NEVER commit
