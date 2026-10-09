@@ -49,6 +49,12 @@ Running commands, *Single* mode and the batch editor need a license (14-day tria
 licenses): **Info > License**, see [LICENSING.md](LICENSING.md). **Info > About** shows the structured
 information window (about, license, changes, system).
 
+## Manual
+
+`manual\Process_Launcher_User_Manual.pdf` is the user manual. `python manual\make_manual.py` rebuilds it
+(reportlab, pillow); owner, version, license features and the list of examples are read from the source.
+Change its text and raise `REVISION` when a release changes what it states.
+
 ## Building
 
 Visual Studio 2022 / 2026, wxWidgets 3.3.x (3.3.3 recommended) - see [DEPENDENCIES.md](DEPENDENCIES.md).
