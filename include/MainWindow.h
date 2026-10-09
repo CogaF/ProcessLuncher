@@ -26,6 +26,7 @@
 
 #include "Id.h"
 #include "Project.h"
+#include "ResultCsv.h"
 #include "cmdgui.h"
 
 /*! \brief Number of command rows shown in the main window. */
@@ -55,6 +56,8 @@ struct CommandOutcome
     wxString output;         /*!< console output of the command. */
     wxString note;           /*!< extra information (for example "file ... doesn't exist"), may be empty. */
     long     exitCode = -1;  /*!< exit code of the command, -1 if unknown. */
+    wxString command;        /*!< the command line that ran. */
+    wxString expected;       /*!< its expected result. */
     long     durationMs = 0; /*!< how long the command ran. */
 };
 
@@ -114,6 +117,10 @@ private:
     void OnSaveProject(wxCommandEvent& event);
     /*! \brief Menu File > Save project as. */
     void OnSaveProjectAs(wxCommandEvent& event);
+    /*! \brief Menu File > Export results: the results of this session as a CSV file. */
+    void OnExportCsv(wxCommandEvent& event);
+    /*! \brief Menu File > Clear results: empties the result list and the results kept for the export. */
+    void OnClearResults(wxCommandEvent& event);
     /*! \brief Menu File > Open examples folder. */
     void OnOpenExamples(wxCommandEvent& event);
     /*! \brief Menu Settings > Open data folder. */
@@ -242,6 +249,12 @@ private:
     /*! \brief \return true if the expected result of row \p commandIndex refers to the result file. */
     bool UsesResultFile(int commandIndex);
 
+    // --- results ----------------------------------------------------------------------------
+    /*! \brief \return the list separator of the Windows regional settings (';' where the decimal sign is ','). */
+    static wxChar ListSeparator();
+    /*! \brief Writes the results kept since the start (or the last Clear) to \p path. \param quiet as in LoadProject(). */
+    bool ExportCsv(const wxString& path, bool quiet);
+
     // --- project ----------------------------------------------------------------------------
     /*! \brief \return the project used when none was chosen: commands.pcr in the data folder. */
     static wxString DefaultProjectFile();
@@ -295,6 +308,7 @@ private:
     int   m_lastRunFailures = 0;        /*!< FAIL results of the last Run command(s), all repetitions. */
     int   m_lastRunCount = 0;           /*!< repetitions completed by the last Run command(s). */
     wxSpinCtrl* m_repeatSpin = nullptr; /*!< the Repeat field. */
+    std::vector<ResultCsv::Record> m_records; /*!< every result since the start or the last Clear results, for the export. */
     wxTimer m_licenseTimer;             /*!< re-checks the license dates. */
 
     wxTextCtrl* m_resultFileTxt = nullptr; /*!< shows (and edits) the full path of the result file. */

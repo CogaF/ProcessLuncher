@@ -4,7 +4,7 @@
  *
  * Build (Visual Studio developer prompt, wxWidgets base only):
  *   cl /EHsc /std:c++20 /utf-8 /DwxUSE_GUI=0 /I include /I %WXWIN%\include /I %WXWIN%\include\msvc
- *      tests\ProcessLauncherSelfTest.cpp src\ResultCheck.cpp src\BatHighlighter.cpp src\BatCommands.cpp src\Project.cpp
+ *      tests\ProcessLauncherSelfTest.cpp src\ResultCheck.cpp src\BatHighlighter.cpp src\BatCommands.cpp src\Project.cpp src\ResultCsv.cpp
  * On Linux with libwxbase3.2-dev: g++ -std=c++20 -I include $(wx-config --cxxflags base) ... $(wx-config --libs base)
  * Returns 0 if everything passes.
  */
@@ -19,6 +19,7 @@
 #include "BatCommands.h"
 #include "BatHighlighter.h"
 #include "Project.h"
+#include "ResultCsv.h"
 #include "ResultCheck.h"
 
 namespace {
@@ -121,6 +122,21 @@ int main(int argc, char** argv)
         check(!Project::load(projectPath, in, error) && !error.empty(), "not a project file");
         removeIfExists(projectPath);
         check(!Project::load(projectPath, in, error), "missing project file");
+    }
+
+    // --- ResultCsv
+    check(ResultCsv::quote("plain", ';') == "plain", "csv: plain field");
+    check(ResultCsv::quote("a;b", ';') == "\"a;b\"" && ResultCsv::quote("a,b", ';') == "a,b", "csv: separator quoted");
+    check(ResultCsv::quote("say \"hi\"", ',') == "\"say \"\"hi\"\"\"", "csv: quotes doubled");
+    check(ResultCsv::quote("line1\nline2", ',') == "\"line1\nline2\"", "csv: line break quoted");
+    {
+        ResultCsv::Record r;
+        r.timestamp = "2026-10-09 10:00:00"; r.run = 2; r.row = 3; r.command = "ping -n 1 x"; r.expected = "TTL=";
+        r.pass = true; r.exitCode = 0; r.durationMs = 1540; r.output = "Reply TTL=64\r\n";
+        const wxString csv = ResultCsv::format({ r }, ';');
+        check(csv.StartsWith("Timestamp;Run;Row;"), "csv: header");
+        check(csv.Contains("\r\n2026-10-09 10:00:00;2;3;ping -n 1 x;TTL=;PASS;0;1,5;;Reply TTL=64\r\n"), "csv: record with ; and decimal comma");
+        check(ResultCsv::format({ r }, ',').Contains(";") == false, "csv: comma separated with decimal point");
     }
 
     // --- BatHighlighter

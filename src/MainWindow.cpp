@@ -73,6 +73,9 @@ MainWindow::MainWindow()
     menuFile->Append(windowIDs::ID_SAVE_PROJECT, "&Save project\tCtrl-S", "Save the command rows in the current project file");
     menuFile->Append(windowIDs::ID_SAVE_PROJECT_AS, "Save project &as...", "Save the command rows in another project file");
     menuFile->AppendSeparator();
+    menuFile->Append(windowIDs::ID_EXPORT_CSV, "E&xport results (CSV)...", "Save the results of this session as a CSV file (spreadsheet)");
+    menuFile->Append(windowIDs::ID_CLEAR_RESULTS, "C&lear results", "Empty the result list (and the results kept for the export)");
+    menuFile->AppendSeparator();
     menuFile->Append(windowIDs::ID_OPEN_EXAMPLES, "Open &examples folder", "Open the folder with the example batch files");
     menuFile->AppendSeparator();
     menuFile->Append(wxID_EXIT);
@@ -178,6 +181,8 @@ MainWindow::MainWindow()
     Bind(wxEVT_MENU, &MainWindow::OnOpenBatch, this, windowIDs::ID_OPEN_BATCH);
     Bind(wxEVT_MENU, &MainWindow::OnOpenExamples, this, windowIDs::ID_OPEN_EXAMPLES);
     Bind(wxEVT_MENU, &MainWindow::OnOpenProject, this, windowIDs::ID_OPEN_PROJECT);
+    Bind(wxEVT_MENU, &MainWindow::OnExportCsv, this, windowIDs::ID_EXPORT_CSV);
+    Bind(wxEVT_MENU, &MainWindow::OnClearResults, this, windowIDs::ID_CLEAR_RESULTS);
     Bind(wxEVT_MENU, &MainWindow::OnSaveProject, this, windowIDs::ID_SAVE_PROJECT);
     Bind(wxEVT_MENU, &MainWindow::OnSaveProjectAs, this, windowIDs::ID_SAVE_PROJECT_AS);
     Bind(wxEVT_MENU, &MainWindow::OnOpenDataFolder, this, windowIDs::ID_OPEN_DATA_FOLDER);
@@ -364,6 +369,54 @@ void MainWindow::OnOpenResultFile(wxCommandEvent&)
     const wxString path = ResultFilePath();
     if (!wxFileExists(path) && !EnsureResultFile()) return;
     wxLaunchDefaultApplication(ResultFilePath());
+}
+
+// ------------------------------------------------------------------------------------------------
+// Results
+// ------------------------------------------------------------------------------------------------
+
+wxChar MainWindow::ListSeparator()
+{
+    wchar_t separator[8] = {};
+    if (GetLocaleInfoEx(LOCALE_NAME_USER_DEFAULT, LOCALE_SLIST, separator, 8) > 0 && separator[0] != L'\0' && separator[1] == L'\0')
+        return separator[0];
+    return ',';
+}
+
+bool MainWindow::ExportCsv(const wxString& path, bool quiet)
+{
+    wxString error;
+    if (!ResultCsv::write(path, m_records, ListSeparator(), error)) {
+        Log::error(std::string(error.utf8_str()));
+        if (quiet) AddMessage(get_current_timestamp(), error, kFailColour);
+        else wxMessageBox(error, "Export results", wxOK | wxICON_ERROR, this);
+        return false;
+    }
+    AddMessage(get_current_timestamp(), wxString::Format("%d result(s) exported to %s", static_cast<int>(m_records.size()), path));
+    return true;
+}
+
+void MainWindow::OnExportCsv(wxCommandEvent&)
+{
+    if (m_records.empty()) {
+        wxMessageBox("There are no results to export yet.", "Export results", wxOK | wxICON_INFORMATION, this);
+        return;
+    }
+    const wxString name = wxDateTime::Now().Format("results_%Y-%m-%d_%H%M%S.csv");
+    wxFileDialog dialog(this, "Export results", wxFileName(ResultFilePath()).GetPath(), name,
+                        "CSV files (*.csv)|*.csv|All files (*.*)|*.*", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+    if (dialog.ShowModal() != wxID_OK) return;
+    ExportCsv(dialog.GetPath(), false);
+}
+
+void MainWindow::OnClearResults(wxCommandEvent&)
+{
+    if (!m_records.empty() &&
+        wxMessageBox("Empty the result list? The results not exported are lost.", "Clear results", wxYES_NO | wxICON_QUESTION, this) != wxYES)
+        return;
+    m_resultList->DeleteAllItems();
+    m_records.clear();
+    m_lastTipItem = -1;
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -951,6 +1004,8 @@ void MainWindow::StartThread(const wxString& input, int commandIndex, int runTag
         CommandOutcome outcome;
         outcome.index = commandIndex;
         outcome.runTag = runTag;
+        outcome.command = command;
+        outcome.expected = expected;
         const CommandRunner::Result run = CommandRunner::run(command, workingDirectory, environment, timeoutMs, commandIndex);
         outcome.output = run.output;
         outcome.exitCode = run.exitCode;
@@ -987,6 +1042,19 @@ void MainWindow::OnThreadResult(wxThreadEvent& event)
     if (outcome.pass) m_passed[i]++;
     else m_failed[i]++;
     cmd.setResult(outcome.pass);
+
+    ResultCsv::Record record;
+    record.timestamp = get_current_timestamp();
+    record.run = outcome.runTag;
+    record.row = outcome.index + 1;
+    record.command = outcome.command;
+    record.expected = outcome.expected;
+    record.pass = outcome.pass;
+    record.exitCode = outcome.exitCode;
+    record.durationMs = outcome.durationMs;
+    record.note = outcome.note;
+    record.output = outcome.output;
+    m_records.push_back(record);
     if (outcome.runTag != 0 && outcome.runTag == m_runTag) { // counted in the summary of the current run
         if (outcome.pass) m_tagPass++;
         else {

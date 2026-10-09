@@ -40,6 +40,7 @@ inline constexpr AppVersionHistoryEntry kAppVersionHistory[] = {
 		"Added: expected result :Exit:<codes> (exit code check) and {id} (row number) in the expected result.\n"
 		"Added: project files (.pcr): the command rows are saved on close and at every run and loaded at the next start.\n"
 		"Added: Repeat field and Stop repeating (Ctrl-R), summary line after every run.\n"
+		"Added: File > Export results (CSV) and Clear results.\n"
 		"Changed: Run command(s) waits until all its commands have ended.\n"
 		"Changed: contact e-mail coga.fation@gmail.com." },
 	{ "0.2.0-rc.1", "2026-09-30",

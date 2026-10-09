@@ -39,6 +39,9 @@ other, analyses the output (or a result file) and records **PASS** / **FAIL**.
 - Expected result `:Exit:<codes>`: PASS when the exit code is in the list, e.g. `:Exit:0`, `:Exit:0-7,16`.
 - `{id}` in an expected result is replaced by the row number: `:File:::[test#{id}] PASS` tells apart rows
   running the same batch file in parallel (the batch file writes `[%~n0#%PCR_CMD_ID%]`).
+- File > Export results (CSV): every result of the session (time, run, row, command, expected result,
+  PASS / FAIL, exit code, duration, note, output), with the list separator of the Windows regional
+  settings so Excel opens it in columns. File > Clear results empties the list.
 
 **Changed**
 - "Run command(s)" now waits until all its commands have ended (Stop waiting, Ctrl+B, releases the wait).
