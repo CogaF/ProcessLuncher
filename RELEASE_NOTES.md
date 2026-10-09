@@ -20,6 +20,23 @@ other, analyses the output (or a result file) and records **PASS** / **FAIL**.
 - Duplicate event symbol, uninitialised counters, worker threads calling the GUI, result text used as
   a format string, broken `:File:` parsing, crash when opening the batch editor.
 
+## Changes after 0.2.0-rc.1 (not released yet)
+
+**Fixed**
+- Closing the window while "Run command(s)" waited for a *Single* command could crash (the window was
+  destroyed while still in use).
+- Closing the window now really terminates the unfinished commands, with every program they started
+  (each command runs in its own Windows job). Programs left running by commands that already ended
+  (`start ...`) are not touched.
+- Closing the window closed the batch editors without asking to save their changes.
+- After "Run command(s)" the rows stayed locked until Settings > Enable Edit; they are unlocked when the
+  last command ends (unless Settings > Disable Edit locked them).
+- Answering *No* to "launch all the not running commands?" left the rows locked.
+- The "previous failure" question of a *Single* command looked only at the row above; it now names every
+  earlier row that failed.
+- The default first row looks for `:File:::[01_minimal_pass_fail] PASS`, so a PASS written by another
+  command running at the same time is not counted for it.
+
 ## Which download to use
 
 | Package | Contents | Size (approx.) | Use it when |

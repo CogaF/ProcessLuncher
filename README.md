@@ -15,6 +15,10 @@ Each row of the table is one command:
 | Parallel / Single | *Parallel* commands start at once; a *Single* command starts alone and "Run command(s)" waits for it (Settings > Stop waiting, Ctrl-B, releases it) |
 | Busy / Ready | the command is running / idle |
 
+While "Run command(s)" runs, the rows are locked; they are unlocked when the last command ends (Settings >
+Disable Edit keeps them locked, Enable Edit unlocks them). Closing the window terminates the unfinished
+commands and everything they started.
+
 Each command runs in its own thread, so the GUI never freezes. Results are added to the list at the
 bottom (newest on top; green = PASS, red = FAIL). In the list Ctrl+A selects everything, Ctrl+C copies
 the selected rows, the tooltip shows the whole text of a row.

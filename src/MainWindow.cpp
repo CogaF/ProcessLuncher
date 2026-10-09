@@ -41,6 +41,7 @@
 #include <wx/file.h>
 
 #include <algorithm>
+#include <set>
 #include <string>
 #include <thread>
 
@@ -55,6 +56,34 @@ const wxColour kFailColour(255, 130, 130);
 
 /*! \brief Size of the buffer used to read the pipe of a command (heap, not the thread's small stack). */
 constexpr std::size_t kPipeBufferSize = 64 * 1024;
+
+/*!
+ * \brief The job objects of the commands still running.
+ *
+ * Every command runs in its own job, so its whole process tree (cmd.exe, the batch file and the
+ * programs it starts) can be terminated when the window closes while it runs. A finished command's
+ * job is closed without killing anything: programs it left running on purpose ("start ...") stay.
+ */
+struct RunningJobs
+{
+    std::mutex       mutex; /*!< protects \ref jobs. */
+    std::set<HANDLE> jobs;  /*!< jobs of the commands that have not ended yet. */
+};
+
+/*! \brief The one RunningJobs of the program (shared by the worker threads and the main window). */
+RunningJobs& runningJobs()
+{
+    static RunningJobs instance;
+    return instance;
+}
+
+/*! \brief Terminates the process tree of every command still running. */
+void TerminateRunningCommands()
+{
+    RunningJobs& running = runningJobs();
+    std::lock_guard<std::mutex> lock(running.mutex);
+    for (HANDLE job : running.jobs) TerminateJobObject(job, 1);
+}
 
 /*!
  * \brief Converts the bytes written by a console program to text.
@@ -115,7 +144,8 @@ wxString RunCommand(const wxString& command, const wxString& workingDirectory)
 
     PROCESS_INFORMATION pi = {};
     const std::wstring directory = workingDirectory.ToStdWstring();
-    const BOOL started = CreateProcessW(nullptr, &commandLine[0], nullptr, nullptr, TRUE, CREATE_NO_WINDOW,
+    // Started suspended so it is in its job before it can start any child process.
+    const BOOL started = CreateProcessW(nullptr, &commandLine[0], nullptr, nullptr, TRUE, CREATE_NO_WINDOW | CREATE_SUSPENDED,
                                         nullptr, directory.empty() ? nullptr : directory.c_str(), &si, &pi);
 
     // The parent must close its copy of the write end, or ReadFile() would never see the end of the output.
@@ -126,6 +156,17 @@ wxString RunCommand(const wxString& command, const wxString& workingDirectory)
         CloseHandle(hRead);
         return "Error: Failed to execute command!";
     }
+
+    HANDLE job = CreateJobObjectW(nullptr, nullptr);
+    if (job != nullptr && !AssignProcessToJobObject(job, pi.hProcess)) {
+        CloseHandle(job); // the command still runs, it only cannot be terminated with the window
+        job = nullptr;
+    }
+    if (job != nullptr) {
+        std::lock_guard<std::mutex> lock(runningJobs().mutex);
+        runningJobs().jobs.insert(job);
+    }
+    ResumeThread(pi.hThread);
 
     std::string raw;
     std::vector<char> buffer(kPipeBufferSize);
@@ -138,6 +179,11 @@ wxString RunCommand(const wxString& command, const wxString& workingDirectory)
     WaitForSingleObject(pi.hProcess, INFINITE);
     CloseHandle(pi.hProcess);
     CloseHandle(pi.hThread);
+    if (job != nullptr) {
+        std::lock_guard<std::mutex> lock(runningJobs().mutex);
+        runningJobs().jobs.erase(job);
+        CloseHandle(job);
+    }
     return DecodeConsoleOutput(raw);
 }
 
@@ -214,7 +260,8 @@ MainWindow::MainWindow()
         m_cmds.back()->setCounters(wxString::Format("counters of CMD: %d", i + 1));
         if (i == 0) { // the first row shows how a batch file reports its result through the result file
             m_cmds.back()->setCmd("bat_examples\\01_minimal_pass_fail.bat");
-            m_cmds.back()->setPostVal(":File:::PASS");
+            // The [name] tag keeps a PASS written by another command running in parallel from counting.
+            m_cmds.back()->setPostVal(":File:::[01_minimal_pass_fail] PASS");
         }
         m_cmdsSizer->Add(m_cmds.back()->getPointer(), 0, wxEXPAND | wxALL, 1);
     }
@@ -533,6 +580,7 @@ bool MainWindow::UsesResultFile(int commandIndex)
 
 void MainWindow::OnEnable(wxCommandEvent&)
 {
+    m_userEditLock = false;
     EnableCmds();
 }
 
@@ -543,7 +591,13 @@ void MainWindow::EnableCmds()
 
 void MainWindow::OnDisable(wxCommandEvent&)
 {
+    m_userEditLock = true;
     DisableCmds();
+}
+
+void MainWindow::UnlockWhenIdle()
+{
+    if (!m_userEditLock && !m_runAllInProgress && !m_closing && !AnyCommandRunning()) EnableCmds();
 }
 
 void MainWindow::DisableCmds()
@@ -648,6 +702,17 @@ void MainWindow::AddMessage(const wxString& timestamp, const wxString& message, 
 
 void MainWindow::OnClose(wxCloseEvent& event)
 {
+    if (m_closing) return; // already closing, waiting for onRunCommand() to return
+
+    // The batch editors are children of this window: give them the chance to save their changes.
+    for (wxWindow* child : GetChildren()) {
+        auto* editor = dynamic_cast<BatchEditorFrame*>(child);
+        if (editor != nullptr && !editor->IsBeingDeleted() && !editor->Close(!event.CanVeto())) {
+            event.Veto();
+            return;
+        }
+    }
+
     if (event.CanVeto() && AnyCommandRunning()) {
         if (wxMessageBox("Are you sure you want to quit, unfinished CMDs will be terminated!!!",
                          "Request to quit application", wxICON_QUESTION | wxYES_NO, this) != wxYES) {
@@ -661,6 +726,14 @@ void MainWindow::OnClose(wxCloseEvent& event)
     {
         std::lock_guard<std::mutex> lock(m_sink->mutex);
         m_sink->target = nullptr; // no result is posted to this window from now on
+    }
+    TerminateRunningCommands();
+
+    // onRunCommand() may be waiting for a single command further up this call stack (wxYield): the
+    // window must outlive it, so it destroys the window itself when it returns.
+    if (m_runAllInProgress) {
+        Hide();
+        return;
     }
     Destroy();
 }
@@ -685,10 +758,13 @@ bool MainWindow::StartSingleCommand(int i)
                  "ATTENTION Blocking thread", wxOK | wxICON_INFORMATION, this);
     if (m_closing) return false;
 
-    // There is no "previous" command for the first row (and no out-of-bounds access either).
-    const bool previousFailed = (i > 0) && !m_cmds[static_cast<size_t>(i) - 1]->getResult();
-    if (previousFailed &&
-        wxMessageBox("Found at least one previous executed CMD with fail result\nDo you still want to proceed?",
+    // Every earlier row counts, not only the one just above (an OFF row keeps its "not failed" state).
+    wxString failed;
+    for (int previous = 0; previous < i; previous++) {
+        if (!m_cmds[static_cast<size_t>(previous)]->getResult()) failed += wxString::Format(" %d", previous + 1);
+    }
+    if (!failed.empty() &&
+        wxMessageBox("Found at least one previous executed CMD with fail result (CMD" + failed + ")\nDo you still want to proceed?",
                      "ATTENTION Previous Failure", wxYES_NO, this) != wxYES) {
         // Keep track of the decision and leave the row idle.
         AddMessage(get_current_timestamp(), wxString::Format("Skipped CMD: %d", i + 1));
@@ -713,8 +789,6 @@ void MainWindow::onRunCommand(wxCommandEvent&)
 
     if (!RequireFeature(LicensePolicy::kFeatureRun, LicenseDialog::featureName(LicensePolicy::kFeatureRun))) return;
 
-    DisableCmds(); // the commands must not be edited while they run
-
     bool foundRunning = false;
     for (size_t i = 0; i < m_cmds.size(); i++) {
         if (m_cmds[i]->getRunning()) {
@@ -730,6 +804,7 @@ void MainWindow::onRunCommand(wxCommandEvent&)
         return;
     }
 
+    DisableCmds(); // the commands must not be edited while they run (unlocked again by UnlockWhenIdle())
     m_runAllInProgress = true;
     for (int i = 0; i < kNrOfCmds && !m_closing; i++) {
         cmdgui& cmd = *m_cmds[static_cast<size_t>(i)];
@@ -761,6 +836,11 @@ void MainWindow::onRunCommand(wxCommandEvent&)
         }
     }
     m_runAllInProgress = false;
+    if (m_closing) { // the window was closed while a single command was waited for
+        Destroy();
+        return;
+    }
+    UnlockWhenIdle();
 }
 
 void MainWindow::StartThread(const wxString& input, int commandIndex)
@@ -821,4 +901,5 @@ void MainWindow::OnThreadResult(wxThreadEvent& event)
     if (!outcome.note.empty()) AddMessage(get_current_timestamp(), outcome.note, kFailColour);
     AddMessage(get_current_timestamp(), wxString::Format("Cmd %d %s, result is: %s", outcome.index + 1, status, output),
                colour);
+    UnlockWhenIdle();
 }

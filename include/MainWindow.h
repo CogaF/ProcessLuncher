@@ -131,7 +131,10 @@ private:
     void onRunCommand(wxCommandEvent& event);
     /*! \brief Result of a worker thread (wxEVT_THREAD_RESULT). */
     void OnThreadResult(wxThreadEvent& event);
-    /*! \brief Asks for confirmation if commands are running, then closes the window. */
+    /*!
+     * \brief Closes the batch editors (they may ask to save), asks for confirmation if commands are
+     * running, terminates them and closes the window.
+     */
     void OnClose(wxCloseEvent& event);
     /*! \brief Ctrl+A selects every row of the list, Ctrl+C copies the selected rows. */
     void OnKeyDown(wxKeyEvent& event);
@@ -158,6 +161,11 @@ private:
     void EnableCmds();
     /*! \brief Locks the editable fields of every row. */
     void DisableCmds();
+    /*!
+     * \brief Unlocks the rows locked by "Run command(s)" once nothing runs any more, unless the
+     * operator locked them (Settings > Disable Edit).
+     */
+    void UnlockWhenIdle();
     /*! \brief \return true if at least one command is running. */
     bool AnyCommandRunning() const;
     /*!
@@ -226,6 +234,7 @@ private:
     int   m_blockingCommandIndex = -1;  /*!< row of that command. */
     bool  m_runAllInProgress = false;   /*!< guards against re-entering onRunCommand() while it waits. */
     bool  m_closing = false;            /*!< the window is being closed, stop waiting and starting. */
+    bool  m_userEditLock = false;       /*!< Settings > Disable Edit: the rows stay locked after a run. */
     long  m_lastTipItem = -1;           /*!< list row whose tooltip is shown, -1 for none. */
 
     std::shared_ptr<EventSink> m_sink = std::make_shared<EventSink>(); /*!< shared with the workers. */
