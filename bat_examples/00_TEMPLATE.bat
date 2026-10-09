@@ -15,6 +15,8 @@ rem started by hand, result.txt next to it.
 if not defined PCR_RESULT_FILE set "PCR_RESULT_FILE=%~dp0result.txt"
 set "RESULT_FILE=%PCR_RESULT_FILE%"
 set "TEST_NAME=%~n0"
+rem Two rows running this file in parallel: add the row number to the tag and expect [name#{id}] PASS
+rem if defined PCR_CMD_ID set "TEST_NAME=%~n0#%PCR_CMD_ID%"
 
 rem ---------------------------------- the test -----------------------------------------
 rem Replace this block with your test. When it worked:   set "MSG=what was checked" & goto :pass

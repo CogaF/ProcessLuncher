@@ -15,6 +15,8 @@ opens the same skeleton, with a reference of all the batch commands.)
 2. Expected result, one of:
    - `:File:::[02_ping_host] PASS` - looks in the **result file**, only at the lines this run added, so a
      PASS from an earlier run is never counted (the name in brackets also keeps parallel commands apart);
+     two rows running the same file: `set "TEST_NAME=%~n0#%PCR_CMD_ID%"` in it and `:File:::[02_ping_host#{id}] PASS`;
+   - `:Exit:0` - judges the exit code (`exit /b 0` / `exit /b 1`), the output is not looked at;
    - `PASS` - looks in the console output of the batch file.
 
 ## The files

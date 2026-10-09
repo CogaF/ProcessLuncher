@@ -44,11 +44,13 @@ from manual_legal import (OWNER, CONTACT, ORGANISATION, WEBSITE, PRODUCT, COPYRI
                           SECTIONS as LEGAL, TITLE as LEGAL_TITLE)
 
 DOC_ID = 'PCR-UM-001'
-REVISION = '1.0'
+REVISION = '1.1'
 DATE = '9 October 2026'
 REVISIONS = [
-    ('1.0', DATE, 'First issue. Includes the changes of 0.2.0-rc.2: commands terminated with the window, rows '
-                  'unlocked after a run, batch files saved in their own encoding.'),
+    ('1.0', DATE, 'First issue: commands terminated with the window, rows unlocked after a run, batch files saved '
+                  'in their own encoding.'),
+    ('1.1', DATE, 'Version 0.2.0-rc.2: projects (rows kept), time limit and Stop per row, :Exit: and {id} in the '
+                  'expected result, PCR_CMD_ID, Repeat with summary, CSV export, command line, screenshots.'),
 ]
 AUTHOR = OWNER
 COPYRIGHT = COPYRIGHT_LINE
@@ -361,7 +363,9 @@ table(['Term', 'Definition'],
        ['Expected result', 'The text that must be found for the run to be a PASS.'],
        ['Result file', 'A text file where batch files append their time stamped PASS / FAIL lines.'],
        ['Parallel command', 'Started together with the other parallel commands.'],
-       ['Single command', 'Started alone: "Run command(s)" waits for it before starting the next rows.']],
+       ['Single command', 'Started alone: "Run command(s)" waits for it before starting the next rows.'],
+       ['Project', 'A file (.pcr) holding the rows, the result file and the repeat count.'],
+       ['Run', 'One pass of "Run command(s)" over the rows; Repeat makes several.']],
       [38, 128], 'Terms')
 
 # =====================================================================================================
@@ -385,8 +389,9 @@ para('There is no installer: unzip the package anywhere. Keep the DLLs (DLL pack
 h2('Files and folders')
 table(['Path (next to the executable)', 'Contents'],
       [[mono('Process Launcher data\\'), 'Created at the first start. ' + mono('log.txt') + ' (log of the sessions), '
-        + mono('settings.ini') + ' (result file, editor text size), the license and the trial state. If the folder cannot '
-        'be created the files are written next to the executable.'],
+        + mono('settings.ini') + ' (result file, last project, editor text size), ' + mono('commands.pcr') + ' (the default '
+        'project), the license and the trial state. If the folder cannot be created the files are written next to the '
+        'executable.'],
        [mono('result.txt'), 'The default result file (see chapter 5).'],
        [mono('bat_examples\\'), 'The example batch files (Appendix B).']],
       [52, 114], 'Files and folders')
@@ -396,23 +401,26 @@ table(['Path (next to the executable)', 'Contents'],
 # =====================================================================================================
 h1('The main window')
 picture('main-window.png', PICTURES['main-window.png'])
-para('From the top: the ' + ui('Run command(s)') + ' button, the ' + ui('Result file') + ' entry, the table of commands '
+para('From the top: the ' + ui('Run command(s)') + ' button with the ' + ui('Repeat') + ' field, the ' + ui('Result file') + ' entry, the table of commands '
      'and the list of results. The program always starts in dark mode. The status bar shows the menu help on the left and '
      'the license state on the right.')
 h2('Command rows')
 table(['Field', 'Meaning'],
       [[ui('ON / OFF'), 'Whether ' + ui('Run command(s)') + ' starts the command. An OFF row is greyed out.'],
-       [ui('Run'), 'Starts only this command, at once (it never blocks the others). Disabled while the command runs.'],
+       [ui('Run / Stop'), 'Starts only this command, at once (it never blocks the others). While the command runs the '
+        'button reads Stop: it terminates the command and everything it started (counted as FAIL).'],
        ['command', 'Anything ' + mono('cmd /c') + ' understands: ' + mono('bat_examples\\02_ping_host.bat 192.168.1.1') + ', '
         + mono('ping -n 1 127.0.0.1') + ', a program with its arguments.'],
-       ['expected result', 'The text to find (chapter 5).'],
+       ['expected result', 'The text to find, the result file or the exit code to check (chapter 5).'],
+       ['time limit', 'Seconds; a command still running then is terminated with everything it started and counted as '
+        'FAIL. 0 = no limit.'],
        ['counters', mono('P= nnn || F= nnn') + ': how many runs passed and failed since the program started.'],
        [ui('Parallel / Single'), 'Parallel commands start together; a Single command starts alone (chapter 4.3).'],
        [ui('Hide'), 'Reserved for showing the console of a command; not available in this version.'],
        [ui('Busy / Ready'), 'The command is running / idle (indicator only).']],
       [34, 132], 'Fields of a command row')
-note('The commands typed in the rows are not saved when the program closes: each start shows the default rows. Keep '
-     'the commands you use in batch files (or in a text file to copy from).')
+note('The rows are saved in the current project when the program closes and at every Run command(s), and come back at '
+     'the next start (chapter 6).')
 h2('The list of results')
 para('Each run adds a line at the top: the time and ' + mono('Cmd n PASS|FAIL, result is: <output>') + ', green for PASS, '
      'red for FAIL. A problem of the check itself (a missing file, a malformed expected result) adds a red line before it. '
@@ -420,16 +428,22 @@ para('Each run adds a line at the top: the time and ' + mono('Cmd n PASS|FAIL, r
      '(they paste into a spreadsheet as two columns); the tooltip shows the whole text of the line under the mouse.')
 h2('Menus')
 table(['Menu', 'Command', 'Keys', 'Action'],
-      [['File', 'New batch file', 'Ctrl+N', 'Opens the batch editor with the PASS / FAIL skeleton.'],
+      [['File', 'Open project...', '', 'Opens a project file (chapter 6).'],
+       ['File', 'Save project / Save project as...', 'Ctrl+S', 'Saves the rows in the current / another project file.'],
+       ['File', 'Export results (CSV)...', '', 'Saves the results of the session as a CSV file (chapter 7).'],
+       ['File', 'Clear results', '', 'Empties the result list.'],
+       ['File', 'New batch file', 'Ctrl+N', 'Opens the batch editor with the PASS / FAIL skeleton.'],
        ['File', 'Open batch file...', 'Ctrl+O', 'Opens a batch file in the editor.'],
        ['File', 'Open examples folder', '', 'Opens ' + mono('bat_examples') + ' in Explorer.'],
-       ['File', 'Exit', '', 'Closes the program (see 4.5).'],
+       ['File', 'Exit', '', 'Closes the program (see 4.7).'],
        ['Settings', 'Enable Edit / Disable Edit', 'Ctrl+E / Ctrl+D', 'Unlocks / locks the editable fields of the rows.'],
        ['Settings', 'Select result file...', '', 'Chooses the result file.'],
        ['Settings', 'Open result file', '', 'Opens the result file with its default program.'],
        ['Settings', 'Open data folder', '', 'Opens the data folder (log, settings, license).'],
-       ['Settings', 'Stop waiting', 'Ctrl+B', 'Releases the Single command that blocks Run command(s).'],
-       ['Info', 'License...', 'Ctrl+K', 'The License window (chapter 7).'],
+       ['Settings', 'Stop waiting', 'Ctrl+B', 'Releases the Single command (or the end of a run) that Run command(s) '
+        'waits for.'],
+       ['Settings', 'Stop repeating', 'Ctrl+R', 'The current run ends, the next repetition is not started.'],
+       ['Info', 'License...', 'Ctrl+K', 'The License window (chapter 11).'],
        ['Info', 'About...', '', 'Version, author, license, changes and system information.']],
       [18, 40, 26, 82], 'Menus')
 
@@ -443,19 +457,25 @@ bullets(['The command line is run as ' + mono('cmd /c "<command>"') + ' without 
          + mono('bat_examples\\01_minimal_pass_fail.bat') + ' work however the program was started.',
          'Standard output and standard error are captured together; standard input is empty, so a command that waits for '
          'a key (' + mono('pause') + ', ' + mono('set /p') + ') ends instead of hanging.',
-         'The environment contains ' + mono('PCR_RESULT_FILE') + ' (full path of the result file) and ' + mono('PCR_APP_DIR')
-         + ' (folder of the executable).',
+         'Each command gets its own environment with ' + mono('PCR_RESULT_FILE') + ' (full path of the result file), '
+         + mono('PCR_APP_DIR') + ' (folder of the executable) and ' + mono('PCR_CMD_ID') + ' (its row number).',
          'The output is decoded with the OEM code page of the console, so accented letters appear correctly.',
-         'Every command runs in its own thread: the window stays responsive. The exit code of the command is not used: '
-         'only the expected text decides PASS or FAIL.'])
+         'Every command runs in its own thread: the window stays responsive. Its exit code and duration are shown in the '
+         'result list; the exit code decides PASS or FAIL only with an expected result ' + mono(':Exit:') + ' (5.1).',
+         'Every command runs in its own Windows job: Stop, the time limit and the closing of the program terminate the '
+         'command together with every program it started.'])
 h2('Run command(s)')
 steps(['If a command of an earlier run is still running, the program asks whether to start the others; that command is '
        'skipped.',
        'The editable fields of every row are locked.',
        'The ON rows are started from the top: Parallel ones at once, Single ones as described in 4.3. A row whose expected '
        'result needs the result file is started only once the file exists (5.3).',
+       'Run command(s) waits until every command of the run has ended (' + ui('Settings &gt; Stop waiting') + ', Ctrl+B, '
+       'releases the wait), then adds a summary line: ' + mono('Run 1/3 ended: 4 PASS, 1 FAIL (CMD 2)') + ', green when '
+       'nothing failed.',
        'When the last command has ended the rows are unlocked again - unless ' + ui('Settings &gt; Disable Edit') + ' locked '
        'them, in which case ' + ui('Enable Edit') + ' unlocks them.'])
+para('The rows are saved in the current project before the run starts.')
 h2('Single commands')
 para('When ' + ui('Run command(s)') + ' reaches a Single row it shows a message: the next rows wait for this command. Make '
      'sure the commands still running in parallel are not needed by it, then click OK. If any earlier row failed in this '
@@ -464,11 +484,25 @@ para('While a Single command runs the window stays usable. ' + ui('Settings &gt;
      'for it: the next rows start, the command goes on and its result is still recorded.')
 note('Single mode needs the ' + mono('sequential') + ' feature of the license; without it the check box goes back to '
      'Parallel.')
+h2('Repeat')
+para('The ' + ui('Repeat') + ' field next to the Run button says how many runs Run command(s) makes; each run starts '
+     'when every command of the previous one has ended. 0 repeats until ' + ui('Settings &gt; Stop repeating') + ' '
+     '(Ctrl+R), which lets the current run end. After the last run a total line follows, for example '
+     + mono('Repeat ended after 100 run(s): 498 PASS, 2 FAIL') + '. The questions of Single commands are asked in the first run '
+     'only; in the later runs a previous failure is only recorded in the list. Repeat is saved in the project.')
+note('Use Repeat to catch intermittent failures: the per-row counters and the CSV export (chapter 7) show which command '
+     'failed and in which run.')
+h2('Time limit and Stop')
+para('A row with a time limit (seconds) is terminated when it is still running after that time: the list shows '
+     + mono('CMD n terminated: time limit of 30 s expired') + ' and the run counts as FAIL. The ' + ui('Stop') + ' button '
+     'of a running row does the same at once. In both cases every program the command started is terminated too.')
 h2('Commands that share the result file')
 para('Commands running at the same time append to the same result file. The expected result ' + mono(':File:::PASS') + ' '
      'would also accept the PASS line of another command, so put the name of the batch file in it, as the batch files of '
-     + mono('bat_examples') + ' write it: ' + mono(':File:::[02_ping_host] PASS') + '. Two rows that run the same batch file '
-     'in parallel cannot be told apart this way: make one of them Single.')
+     + mono('bat_examples') + ' write it: ' + mono(':File:::[02_ping_host] PASS') + '. For two rows that run the same batch '
+     'file in parallel, let the batch file add its row number ' + mono('%PCR_CMD_ID%') + ' to the tag - '
+     + mono('set "TEST_NAME=%~n0#%PCR_CMD_ID%"') + ' - and write ' + mono('{id}') + ' in the expected result: '
+     + mono(':File:::[02_ping_host#{id}] PASS') + '.')
 h2('Closing the program')
 para('If commands are still running, the program asks for confirmation. Closing then <b>terminates the unfinished '
      'commands together with every program they started</b>; their results are dropped. Programs left running on purpose '
@@ -485,11 +519,15 @@ table(['Expected result', 'PASS when'],
        [mono(':File:<path>::<text>'), 'the file ' + mono('<path>') + ' contains ' + mono('<text>') + ' on one line. The '
         'whole file is searched. ' + mono('%VARIABLES%') + ' in the path are expanded.'],
        [mono(':File:::<text>'), 'the <b>result file</b> contains ' + mono('<text>') + ' in a line written <b>after the '
-        'command started</b>; a PASS left by an earlier run never counts.']],
+        'command started</b>; a PASS left by an earlier run never counts.'],
+       [mono(':Exit:<codes>'), 'the exit code of the command is one of the codes: a comma separated list of numbers and '
+        'ranges, e.g. ' + mono(':Exit:0') + ', ' + mono(':Exit:0-7') + ' (robocopy), ' + mono(':Exit:0,3,10-12') + '. The '
+        'output is not looked at.']],
       [48, 118], 'Forms of the expected result')
 para('The first ' + mono('::') + ' after ' + mono(':File:') + ' ends the path (the colon of a drive letter stands alone). '
      'The text cannot span two lines. An expected result that starts with ' + mono(':File:') + ' but has no ' + mono('::')
-     + ' is reported as malformed and counted as FAIL.')
+     + ' is reported as malformed and counted as FAIL, as is a ' + mono(':Exit:') + ' without valid codes. ' + mono('{id}')
+     + ' anywhere in the expected result is replaced by the row number.')
 note('Without ' + mono('@echo off') + ' at the top of a batch file, cmd.exe prints every command before running it, so '
      'the expected text is found inside the printed command: a false PASS. Keep the word PASS out of the FAIL lines and '
      'the word FAIL out of the PASS lines.', 'Caution')
@@ -504,7 +542,66 @@ para('A command whose expected result uses the result file is started only when 
      'chooses another place, ' + ui('Cancel') + ' leaves the command not started (a line in the list says so).')
 
 # =====================================================================================================
-# 6 Batch files
+# 6 Projects
+# =====================================================================================================
+h1('Projects')
+para('A project file (' + mono('.pcr') + ', INI text) holds the rows - ON / OFF, Single, command, expected result, time '
+     'limit - the result file and the repeat count. The current project is named in the window title.')
+bullets(['The rows are saved in the current project when the program closes and when Run command(s) starts, and the '
+         'project is opened again at the next start.',
+         'Until another is chosen the project is ' + mono('Process Launcher data\\commands.pcr') + '.',
+         ui('File &gt; Save project as...') + ' saves the rows in a new file, which becomes the current project; '
+         + ui('File &gt; Open project...') + ' saves the current rows, then loads another project.',
+         'A project file can be given on the command line (chapter 8), also by associating ' + mono('.pcr') + ' files with '
+         'the program in Windows.',
+         'A project that cannot be read (damaged, or written by a newer version) is never overwritten: the default '
+         'project is used, and a damaged default project is kept as ' + mono('commands.pcr.bad') + '.'])
+code('[Project]\nVersion=1\nResultFile=C:\\Tests\\result.txt\nRepeat=1\n[Row01]\nActive=1\nSingle=0\n'
+     'Command=bat_examples\\02_ping_host.bat 192.168.1.1\nExpected=:File:::[02_ping_host] PASS\nTimeout=30')
+note('A project holds at most as many rows as the window shows (11); further rows are ignored with a message.')
+
+# =====================================================================================================
+# 7 Results export
+# =====================================================================================================
+h1('Exporting the results')
+para(ui('File &gt; Export results (CSV)...') + ' saves every result since the start (or the last ' + ui('Clear results')
+     + ') as a CSV file that a spreadsheet opens in columns: the separator is the list separator of the Windows regional '
+     'settings (; where the decimal sign is a comma, as in Italy), the file is UTF-8 so accents are kept.')
+table(['Column', 'Contents'],
+      [['Timestamp', 'When the command ended.'], ['Run', 'Number of the run of Run command(s); 0 = Run button of the row.'],
+       ['Row', 'Row number.'], ['Command / Expected', 'What ran and what was looked for.'], ['Result', 'PASS or FAIL.'],
+       ['Exit code', 'Exit code of the command, -1 if unknown.'], ['Duration (s)', 'How long it ran.'],
+       ['Note', 'Why the check failed or the command was terminated.'], ['Output', 'The console output.']],
+      [40, 126], 'Columns of the CSV file')
+
+# =====================================================================================================
+# 8 Command line
+# =====================================================================================================
+h1('Command line')
+code('"Process Launcher.exe" [project.pcr] [--project <file>] [--run]\n'
+     '                       [--repeat <n>] [--csv <file>] [--screenshots <folder>]')
+table(['Option', 'Effect'],
+      [[mono('project.pcr') + ', ' + mono('--project <file>'), 'Opens this project instead of the last one.'],
+       [mono('--run'), 'Runs the rows at once without any question, exports the CSV if asked and closes.'],
+       [mono('--repeat <n>'), 'Repeat count for this start (0 = until stopped).'],
+       [mono('--csv <file>'), 'With --run: exports the results to this file.'],
+       [mono('--screenshots <folder>'), 'Saves pictures of the main window, the batch editor and the About window '
+        '(demonstration rows, run when licensed) and closes; used to illustrate this manual.']],
+      [50, 116], 'Command line options')
+para('With ' + mono('--run') + ' the exit code is <b>0</b> when every result is PASS, <b>1</b> when at least one is FAIL '
+     'and <b>2</b> when nothing could run (no license, unreadable project, no row ON). A missing result file is created '
+     'without asking. Neither the project nor the settings are written, and a project given with --project does not become '
+     'the one opened at the next start. A summary line is printed to the console the program was started from.')
+code('start /wait "" "Process Launcher.exe" --run --project tests.pcr ^\n'
+     '                                       --repeat 10 --csv results.csv\n'
+     'if errorlevel 2 echo could not run & exit /b 2\n'
+     'if errorlevel 1 echo at least one FAIL & exit /b 1\n'
+     'echo all PASS')
+note('Process Launcher is a Windows program, not a console one: without ' + mono('start /wait') + ' a batch file goes on '
+     'at once and the exit code is lost. In PowerShell use ' + mono('(Start-Process -Wait -PassThru ...).ExitCode') + '.')
+
+# =====================================================================================================
+# 9 Batch files
 # =====================================================================================================
 h1('Writing batch files')
 h2('The PASS / FAIL pattern')
@@ -541,8 +638,9 @@ bullets(['First line ' + mono('@echo off') + '.',
          'Windows (CRLF) line ends: labels and ' + mono('goto') + ' can fail with bare LF. The editor saves with CRLF.',
          'Inside a ' + mono('( ... )') + ' block ' + mono('%VAR%') + ' is expanded before the block runs: set a variable and '
          'read it in different blocks, or use labels as the examples do.',
-         'A command that may hang should be guarded with a time limit (see ' + mono('15_timeout_guard.bat') + '): Process '
-         'Launcher itself waits for a command as long as it runs.'])
+         'A command that may hang needs a time limit: the time limit of its row, or one inside the batch file (see '
+         + mono('15_timeout_guard.bat') + ').',
+         'For ' + mono(':Exit:') + ' end the batch file with ' + mono('exit /b <code>') + '.'])
 
 # =====================================================================================================
 # 7 Batch editor
@@ -606,12 +704,14 @@ table(['Symptom', 'Cause and remedy'],
        ['A command always fails with ' + mono(':File:...'), 'The line is written to another file than the result file shown: '
         'the batch file must append to ' + mono('%PCR_RESULT_FILE%') + '. The path is wrong, or the text spans two lines.'],
        ['"File ... doesn\'t exist"', 'The path after ' + mono(':File:') + ' is wrong, or the command did not create it.'],
-       ['A command stays Busy', 'It waits for something (a dialog, a network). Run command(s) goes on with Stop waiting '
-        '(Ctrl+B); closing the program terminates it.'],
+       ['A command stays Busy', 'It waits for something (a dialog, a network). Click its Stop button, or give the row a '
+        'time limit; Stop waiting (Ctrl+B) lets Run command(s) go on without it.'],
+       ['--run returns at once in a batch file', 'Use ' + mono('start /wait "" "Process Launcher.exe" --run ...') + ' (chapter 8).'],
+       ['Exit code 2 from --run', 'No license, the project could not be read or no row is ON: see the log.'],
        ['"...not started: no result file"', 'The question about the result file was cancelled: choose the file (Settings '
         '&gt; Select result file).'],
-       ['Accented letters wrong in a batch file', 'It was saved in UTF-8 without ' + mono('chcp 65001') + '; see 7.1.'],
-       ['Run buttons do nothing / ask for a license', 'The trial is over: see chapter 8.']],
+       ['Accented letters wrong in a batch file', 'It was saved in UTF-8 without ' + mono('chcp 65001') + '; see 10.1.'],
+       ['Run buttons do nothing / ask for a license', 'The trial is over: see chapter 11.']],
       [52, 114], 'Troubleshooting')
 para('The log of every session is ' + mono('Process Launcher data\\log.txt') + ' (Settings &gt; Open data folder); add it '
      f'to a problem report sent to <b>{CONTACT}</b>.')
@@ -621,8 +721,10 @@ para('The log of every session is ' + mono('Process Launcher data\\log.txt') + '
 # =====================================================================================================
 h1('Appendix A - Keyboard shortcuts')
 table(['Keys', 'Command'],
-      [['Ctrl+N / Ctrl+O', 'New / open batch file'], ['Ctrl+E / Ctrl+D', 'Enable / disable edit of the rows'],
-       ['Ctrl+B', 'Stop waiting for the Single command'], ['Ctrl+K', 'License'],
+      [['Ctrl+N / Ctrl+O', 'New / open batch file'], ['Ctrl+S', 'Save project'],
+       ['Ctrl+E / Ctrl+D', 'Enable / disable edit of the rows'],
+       ['Ctrl+B', 'Stop waiting for the Single command / the end of a run'], ['Ctrl+R', 'Stop repeating'],
+       ['Ctrl+K', 'License'],
        ['Ctrl+A / Ctrl+C', 'In the result list: select all / copy']],
       [40, 126], 'Keyboard shortcuts')
 story.append(PageBreak())
