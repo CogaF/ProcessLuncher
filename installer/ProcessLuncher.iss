@@ -10,6 +10,14 @@
 
 #define AppName "Process Launcher"
 #define AppExe "Process Launcher.exe"
+#define AppIdValue "{42823BA4-0695-4AEF-8A9F-1EFC9ABC5A16}"
+
+#ifndef SharedKitDir
+  #define SharedKitDir GetEnv("COGAF_SHARED_REDIST")
+  #if SharedKitDir == ""
+    #define SharedKitDir "..\..\win-installer-kit"
+  #endif
+#endif
 #define DataFolder "Process Launcher data"
 #ifndef AppVersion
   #define AppVersion "0.0.0"
@@ -44,7 +52,7 @@
 
 [Setup]
 ; Never change AppId: it is how a newer installer finds and replaces an installed version.
-AppId={{42823BA4-0695-4AEF-8A9F-1EFC9ABC5A16}
+AppId={{#AppIdValue}
 AppName={#AppName}
 AppVersion={#AppVersion}
 AppVerName={#AppName} {#AppVersion}
@@ -61,12 +69,7 @@ LicenseFile={#RepoDir}\LICENSE
 SetupIconFile={#RepoDir}\art\app.ico
 OutputDir={#RepoDir}\installer\Output
 OutputBaseFilename=Process Launcher {#AppVersion} setup
-Compression=lzma2/max
-SolidCompression=yes
-WizardStyle=modern
 ; 64 bit where Windows can run it (also ARM64 Windows 11, emulated), else 32 bit - if a Win32 build is bundled.
-ArchitecturesAllowed=x86compatible x64compatible
-ArchitecturesInstallIn64BitMode=x64compatible
 ; Dual-mode install per user request (no admin / no fallback problem):
 ;   - "lowest" is the default so the installer runs without an admin prompt;
 ;   - PrivilegesRequiredOverridesAllowed=dialog shows the operator a chooser on launch:
@@ -77,10 +80,7 @@ ArchitecturesInstallIn64BitMode=x64compatible
 ; Non-admin mode writes into a per-user folder that the operator already owns, so no permission
 ; stunts are needed; the installer still shows a folder-picker, so "install anywhere I can write"
 ; is the natural fallback when admin is refused.
-PrivilegesRequired=lowest
-PrivilegesRequiredOverridesAllowed=dialog commandline
-MinVersion=6.1sp1
-CloseApplications=yes
+#include "{#SharedKitDir}\shared_setup.iss"
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -221,3 +221,7 @@ begin
   Need := Need + StrToInt64Def(Carried, 0);
   Result := Have < Need;
 end;
+
+#ifndef NoPrevInstallCheck
+#include "{#SharedKitDir}\shared_install_wizard.iss"
+#endif
