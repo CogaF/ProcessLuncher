@@ -80,7 +80,7 @@ OutputBaseFilename=Process Launcher {#AppVersion} setup
 ; Non-admin mode writes into a per-user folder that the operator already owns, so no permission
 ; stunts are needed; the installer still shows a folder-picker, so "install anywhere I can write"
 ; is the natural fallback when admin is refused.
-#include "{#SharedKitDir}\shared_setup.iss"
+#include SharedKitDir + "\shared_setup.iss"
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -223,5 +223,5 @@ begin
 end;
 
 #ifndef NoPrevInstallCheck
-#include "{#SharedKitDir}\shared_install_wizard.iss"
+#include SharedKitDir + "\shared_install_wizard.iss"
 #endif
